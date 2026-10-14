@@ -194,7 +194,8 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
 <footer>
   <label>Voice:
     <select id="voice-mode">
-      <option value="auto">Auto — Hindi voice if available</option>
+      <option value="auto">Auto — device Hindi voice, else recorded clips</option>
+      <option value="clip">Recorded clips</option>
       <option value="english">English phonetic spelling</option>
     </select>
     <button class="chip" id="voice-test">Test</button>
@@ -375,18 +376,28 @@ if(hasTTS){ try{ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }ca
 const hindiVoice = () => voices.find(v=>/^hi/i.test(v.lang));
 function updateVoiceStatus(){
   const s = $('#voice-status'); if(!s) return;
-  if(!hasTTS){ s.textContent='This browser can’t speak — read the phonetic spelling instead.'; return; }
-  const hi = hindiVoice();
+  const hi = hasTTS ? hindiVoice() : null;
+  if(voiceMode==='clip' || !hasTTS || (voiceMode==='auto' && !hi)){
+    s.textContent = 'Playing recorded clips. If you hear nothing on iPhone, turn off the silent switch.'; return; }
   s.textContent = voiceMode==='english' ? 'Reading the phonetic spelling with an English voice.'
-    : hi ? `Using ${hi.name} (Hindi), which reads Sanskrit from the Devanagari script.`
-         : 'No Hindi voice on this device, so the phonetic spelling is read in English. Adding a Hindi voice in your device’s speech settings sounds much more natural.';
+    : `Using ${hi.name} (Hindi), which reads Sanskrit from the Devanagari script.`;
+}
+let clip = null;
+function playClip(it, btn){
+  try{ if(clip){ clip.pause(); } }catch(e){}
+  document.querySelectorAll('.say.playing').forEach(b=>b.classList.remove('playing'));
+  clip = new Audio('audio/'+it.id+'.mp3');
+  if(btn){ btn.classList.add('playing'); clip.onended = clip.onerror = () => btn.classList.remove('playing'); }
+  const p = clip.play();
+  if(p && p.catch) p.catch(()=>{ if(btn) btn.classList.remove('playing'); toast('Couldn’t play the clip — check that your ringer/silent switch is off'); });
 }
 function speak(it, btn){
-  if(!hasTTS){ toast('Speech isn’t supported in this browser'); return; }
+  if(!it.dv) return;
+  const hi = hasTTS ? hindiVoice() : null;
+  if(voiceMode==='clip' || !hasTTS || (voiceMode==='auto' && !hi)){ playClip(it, btn); return; }
   try{ speechSynthesis.cancel(); }catch(e){}
-  const hi = hindiVoice();
   let u;
-  if(voiceMode!=='english' && hi && it.dv){
+  if(voiceMode!=='english' && hi){
     u = new SpeechSynthesisUtterance(it.dv); u.voice=hi; u.lang=hi.lang; u.rate=.72;
   } else {
     u = new SpeechSynthesisUtterance(it.s.toLowerCase());
@@ -395,7 +406,7 @@ function speak(it, btn){
   }
   document.querySelectorAll('.say.playing').forEach(b=>b.classList.remove('playing'));
   if(btn){ btn.classList.add('playing'); u.onend=u.onerror=()=>btn.classList.remove('playing'); }
-  try{ speechSynthesis.speak(u); }catch(e){ toast('Sound is blocked here — open the page in Safari or Chrome'); }
+  try{ speechSynthesis.speak(u); }catch(e){ playClip(it, btn); }
 }
 function sayBtn(it, small){
   const b = el('button',{class:'say'+(small?' sm':''),'aria-label':'Pronounce '+it.t,title:'Hear it'},SPK);
