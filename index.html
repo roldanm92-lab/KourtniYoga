@@ -199,9 +199,9 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
 <footer>
   <label>Voice:
     <select id="voice-mode">
-      <option value="auto">Auto — device Hindi voice, else recorded clips</option>
-      <option value="clip">Recorded clips</option>
-      <option value="english">English phonetic spelling</option>
+      <option value="clip">Recorded voice (recommended)</option>
+      <option value="auto">Device Hindi voice, if available</option>
+      <option value="english">Device English voice reading the phonetic spelling</option>
     </select>
     <button class="chip" id="voice-test">Test</button>
   </label>
@@ -373,7 +373,7 @@ function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on
 /* ---------------- SPEECH ---------------- */
 const SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
 let voices = [];
-let voiceMode = store.get('voice','auto');
+let voiceMode = store.get('voice2','clip');
 let hasTTS = false;
 try{ hasTTS = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined'; }catch(e){}
 function loadVoices(){ try{ voices = hasTTS ? speechSynthesis.getVoices() || [] : []; }catch(e){ voices = []; } updateVoiceStatus(); }
@@ -383,7 +383,7 @@ function updateVoiceStatus(){
   const s = $('#voice-status'); if(!s) return;
   const hi = hasTTS ? hindiVoice() : null;
   if(voiceMode==='clip' || !hasTTS || (voiceMode==='auto' && !hi)){
-    s.textContent = 'Playing recorded clips. If you hear nothing on iPhone, turn off the silent switch.'; return; }
+    s.textContent = 'Playing recorded pronunciations. On iPhone, turn off the silent switch to hear them.'; return; }
   s.textContent = voiceMode==='english' ? 'Reading the phonetic spelling with an English voice.'
     : `Using ${hi.name} (Hindi), which reads Sanskrit from the Devanagari script.`;
 }
@@ -391,7 +391,7 @@ let clip = null;
 function playClip(it, btn){
   try{ if(clip){ clip.pause(); } }catch(e){}
   document.querySelectorAll('.say.playing').forEach(b=>b.classList.remove('playing'));
-  clip = new Audio('audio/'+it.id+'.mp3');
+  clip = new Audio('audio/'+it.id+'.mp3?v=2');
   if(btn){ btn.classList.add('playing'); clip.onended = clip.onerror = () => btn.classList.remove('playing'); }
   const p = clip.play();
   if(p && p.catch) p.catch(()=>{ if(btn) btn.classList.remove('playing'); toast('Couldn’t play the clip — check that your ringer/silent switch is off'); });
@@ -769,7 +769,7 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>show(b.dataset
 chipListeners.push(sec => { if(sec==='cards') fcStart(); if(sec==='quiz') quizStart(); if(sec==='match') matchStart(); });
 
 $('#voice-mode').value = voiceMode;
-$('#voice-mode').onchange = e => { voiceMode=e.target.value; store.set('voice',voiceMode); updateVoiceStatus(); };
+$('#voice-mode').onchange = e => { voiceMode=e.target.value; store.set('voice2',voiceMode); updateVoiceStatus(); };
 $('#voice-test').onclick = () => speak(BY_ID.svadhisthana);
 
 renderChips();
