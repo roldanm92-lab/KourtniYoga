@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YTT 2026 Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Atkinson+Hyperlegible:wght@400;700&family=Tiro+Devanagari+Sanskrit&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5efe4; --card:#fffdf8; --ink:#2a2420; --muted:#7a6f66; --line:#e3d9ca;
+  --accent:#b4532f; --accent-ink:#fff; --ok:#4f7a4c; --ok-bg:#e5efe1; --bad:#a8392e; --bad-bg:#f6e1dc;
+  --chip:#ece3d5; --shadow:0 1px 2px rgba(60,40,20,.06),0 6px 20px rgba(60,40,20,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1c1916; --card:#262220; --ink:#efe7dc; --muted:#a99d90; --line:#3a342f;
+  --accent:#e0815a; --accent-ink:#1c1916; --ok:#9cc596; --ok-bg:#25331f; --bad:#ec8f83; --bad-bg:#3a221e;
+  --chip:#332e29; --shadow:none;
+}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.5 "Atkinson Hyperlegible",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 80px}
+header h1{font-family:Fraunces,Georgia,serif;font-weight:650;font-size:30px;margin:4px 0 2px;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);font-size:15px}
+nav{display:flex;gap:4px;overflow-x:auto;margin:18px -16px 0;padding:0 16px 2px;border-bottom:1px solid var(--line);scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:0;padding:10px 12px;border-bottom:2.5px solid transparent;color:var(--muted);white-space:nowrap;font-weight:700;font-size:15px}
+nav button[aria-current="true"]{color:var(--ink);border-color:var(--accent)}
+section{display:none;padding-top:18px}
+section.on{display:block}
+h2{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:15px;margin:0 0 14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:5px 11px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 16px;font-weight:700}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.small{font-size:14px;color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px}
+.term{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:30px;line-height:1.2}
+.deva{font-family:"Tiro Devanagari Sanskrit",serif;font-size:20px;color:var(--muted)}
+.phon{font-size:15px;color:var(--muted);letter-spacing:.02em}
+.say{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg);flex:none;vertical-align:middle}
+.say svg{width:18px;height:18px}
+.say.playing{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.say.sm{width:30px;height:30px}.say.sm svg{width:14px;height:14px}
+
+/* flashcards */
+.fc{min-height:280px;display:flex;flex-direction:column;justify-content:center;gap:10px;cursor:pointer;position:relative;text-align:center;align-items:center}
+.fc .label{position:absolute;top:14px;left:18px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.fc .hint{position:absolute;bottom:12px;left:0;right:0;font-size:13px;color:var(--muted)}
+.fc .ans{font-size:20px;max-width:34ch}
+.fc .q{font-size:21px;max-width:34ch}
+.facts{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.fact{background:var(--chip);border-radius:6px;padding:2px 8px;font-size:14px}
+.bar{height:6px;background:var(--line);border-radius:6px;overflow:hidden;margin:10px 0 14px}
+.bar i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.fc-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.fc-actions .btn{padding:14px}
+.again{color:var(--bad)} .got{color:var(--ok)}
+.qa-text{text-align:left;font-size:17px;max-width:46ch}
+.qa-text ul{margin:6px 0 0;padding-left:20px}
+
+/* quiz */
+.qprompt{font-size:20px;margin:4px 0 16px}
+.qprompt b{font-family:Fraunces,Georgia,serif;font-weight:650}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px 14px;font-size:16px}
+.opt.right{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.opt:disabled{cursor:default}
+.explain{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);display:flex;gap:12px;align-items:center}
+.stat{font-variant-numeric:tabular-nums}
+
+/* match */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(min-width:560px){.grid{grid-template-columns:repeat(4,1fr)}}
+.tile{min-height:78px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px;font-size:14px;line-height:1.25;display:flex;align-items:center;justify-content:center;text-align:center}
+.tile.sk{font-family:Fraunces,Georgia,serif;font-size:16px}
+.tile.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.tile.done{opacity:.25;cursor:default}
+.tile.miss{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* order */
+.slots{display:grid;gap:6px;margin-bottom:16px;counter-reset:s}
+.slot{display:flex;align-items:center;gap:10px;min-height:46px;border:1.5px dashed var(--line);border-radius:10px;padding:6px 12px;background:transparent;text-align:left;counter-increment:s}
+.slot::before{content:counter(s);font-variant-numeric:tabular-nums;color:var(--muted);width:18px;font-size:14px}
+.slot.filled{border-style:solid;background:var(--card)}
+.slot.right{border-color:var(--ok);background:var(--ok-bg)}
+.slot.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.slot .m{color:var(--muted);font-size:13px;display:block}
+.pool{display:flex;flex-wrap:wrap;gap:8px}
+.pool .btn{font-weight:400;font-family:Fraunces,Georgia,serif}
+select{font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%}
+
+/* recall */
+.blanks{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.blank{border-bottom:2px solid var(--line);min-width:90px;padding:4px 6px;color:transparent;font-size:15px}
+.blank.hit{color:var(--ok);border-color:var(--ok);font-weight:700}
+.blank.shown{color:var(--bad);border-color:var(--bad)}
+.inp{display:flex;gap:8px}
+.inp input{flex:1;min-width:0;font:inherit;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.inp input.miss{animation:shake .3s;border-color:var(--bad)}
+
+/* glossary */
+.search{width:100%;font:inherit;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);margin-bottom:12px}
+.gl h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 0 6px}
+.gi{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.gi .t{font-family:Fraunces,Georgia,serif;font-size:19px}
+.gi .d{font-family:"Tiro Devanagari Sanskrit",serif;color:var(--muted);margin-left:6px}
+.gi .p{font-size:14px;color:var(--muted)}
+.gi .mm{font-size:15px}
+.done-box{text-align:center;padding:30px 10px}
+.done-box .big{font-family:Fraunces,Georgia,serif;font-size:44px}
+footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+footer label{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1}
+kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+@media(max-width:520px){.kb{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Yoga Teacher Training</h1>
+  <p>2026 study guide — practice until it sticks.</p>
+</header>
+
+<nav id="nav">
+  <button data-tab="cards">Flashcards</button>
+  <button data-tab="quiz">Quiz</button>
+  <button data-tab="match">Match</button>
+  <button data-tab="order">Order</button>
+  <button data-tab="recall">Recall</button>
+  <button data-tab="gloss">Pronounce</button>
+</nav>
+
+<section id="cards">
+  <h2>Flashcards</h2>
+  <p class="sub">Tap the card to flip. Cards you miss come back a few cards later.</p>
+  <div class="chips" data-decks="qa"></div>
+  <div class="row small"><span id="fc-count"></span><span class="spacer"></span>
+    <button class="chip" id="fc-dir" aria-pressed="false">Show English first</button></div>
+  <div class="bar"><i id="fc-bar"></i></div>
+  <div id="fc-area"></div>
+  <p class="small kb" style="margin-top:12px"><kbd>Space</kbd> flip · <kbd>1</kbd> again · <kbd>2</kbd> got it · <kbd>S</kbd> say it</p>
+</section>
+
+<section id="quiz">
+  <h2>Quiz</h2>
+  <p class="sub">10 questions drawn from the topics you pick.</p>
+  <div class="chips" data-decks></div>
+  <div id="quiz-area"></div>
+</section>
+
+<section id="match">
+  <h2>Match</h2>
+  <p class="sub">Pair each Sanskrit term with its meaning. Fewer misses, faster time.</p>
+  <div class="chips" data-decks></div>
+  <div class="row small" style="margin-bottom:12px"><span class="stat" id="m-time">0.0s</span>·<span class="stat" id="m-miss">0 misses</span><span class="spacer"></span><span id="m-best"></span></div>
+  <div id="match-area"></div>
+  <div class="row" style="margin-top:14px"><button class="btn" id="m-new">New board</button></div>
+</section>
+
+<section id="order">
+  <h2>Put it in order</h2>
+  <p class="sub">Tap terms to place them. Tap a placed term to send it back.</p>
+  <div class="row" style="margin-bottom:14px"><select id="o-seq"></select></div>
+  <div id="order-area"></div>
+</section>
+
+<section id="recall">
+  <h2>Recall</h2>
+  <p class="sub">Name them from memory — the way the test will ask. Spelling and diacritics are forgiven.</p>
+  <div class="row" style="margin-bottom:14px"><select id="r-prompt"></select></div>
+  <div id="recall-area"></div>
+</section>
+
+<section id="gloss">
+  <h2>Pronunciation</h2>
+  <p class="sub">Every Sanskrit word in the guide. Capitals mark the stressed syllable.</p>
+  <input class="search" id="g-q" type="search" placeholder="Search a word or meaning…" autocomplete="off">
+  <div class="gl" id="gloss-area"></div>
+</section>
+
+<footer>
+  <label>Voice:
+    <select id="voice-mode">
+      <option value="auto">Auto — Hindi voice if available</option>
+      <option value="english">English phonetic spelling</option>
+    </select>
+    <button class="chip" id="voice-test">Test</button>
+  </label>
+  <p id="voice-status" style="margin:8px 0 0"></p>
+  <p style="margin:8px 0 0">Spellings follow standard IAST. Note: the dog poses are <b>Śvānāsana</b> (śvāna = dog), not Śavāsana (corpse pose).</p>
+</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const DECKS = {
+  limbs:   {name:'8 Limbs',        t2m:'What is the limb <b>{t}</b>?',            m2t:'Which limb is “{m}”?'},
+  yamas:   {name:'Yamas',          t2m:'What does the yama <b>{t}</b> mean?',     m2t:'Which yama means “{m}”?'},
+  niyamas: {name:'Niyamas',        t2m:'What does the niyama <b>{t}</b> mean?',   m2t:'Which niyama means “{m}”?'},
+  koshas:  {name:'Kośas',          t2m:'What is <b>{t}</b>?',                     m2t:'Which kośa is the {m}?'},
+  vayus:   {name:'Vāyus',          t2m:'Where in the body is <b>{t}</b>?',        m2t:'Which vāyu is located in: {m}?'},
+  nadis:   {name:'Nāḍīs',          t2m:'What kind of channel is <b>{t}</b>?',     m2t:'Which nāḍī is the {m}?'},
+  bandhas: {name:'Bandhas',        t2m:'What is <b>{t}</b>?',                     m2t:'Which bandha is the {m}?'},
+  chakras: {name:'Cakras',         t2m:'Where is <b>{t}</b> located?',            m2t:'Which cakra sits {m}?'},
+  doshas:  {name:'Doṣas',          t2m:'Which elements make up <b>{t}</b>?',      m2t:'Which doṣa is made of {m}?'},
+  poses:   {name:'Postures',       t2m:'What is <b>{t}</b> in English?',          m2t:'What is the Sanskrit name for {m}?'},
+  core:    {name:'Core concepts',  t2m:'What is <b>{t}</b>?',                     m2t:'Which term means: {m}?'},
+  qa:      {name:'Short answers',  qa:true}
+};
+const XQ = { color: t => `What color is <b>${t}</b>?` };
+
+const I = (d,id,t,dv,s,m,extra={}) => Object.assign({d,id,t,dv,s,m},extra);
+const ITEMS = [
+  // 8 limbs
+  I('limbs','yama','Yama','यम','YAH-mah','Guidelines for how we interact in the world',{k:['restraint']}),
+  I('limbs','niyama','Niyama','नियम','nee-YAH-mah','Guidelines for personal, spiritual growth',{k:['observance']}),
+  I('limbs','asana','Āsana','आसन','AH-sah-nah','Posture (for meditation)',{k:['posture','pose']}),
+  I('limbs','pranayama','Prāṇāyāma','प्राणायाम','prah-nah-YAH-mah','Breath regulation',{k:['breath']}),
+  I('limbs','pratyahara','Pratyāhāra','प्रत्याहार','prah-tyah-HAH-rah','Sensory withdrawal',{k:['withdrawal','sense withdrawal']}),
+  I('limbs','dharana','Dhāraṇā','धारणा','DHAH-rah-nah','Concentration',{k:['concentration']}),
+  I('limbs','dhyana','Dhyāna','ध्यान','DHYAH-nah','Meditation',{k:['meditation']}),
+  I('limbs','samadhi','Samādhi','समाधि','sah-MAH-dhee','Mental absorption / bliss',{k:['absorption','bliss']}),
+  // yamas
+  I('yamas','ahimsa','Ahiṁsā','अहिंसा','ah-HIM-sah','Non-violence',{k:['nonviolence']}),
+  I('yamas','satya','Satya','सत्य','SUHT-yah','Truthfulness',{k:['truth']}),
+  I('yamas','asteya','Asteya','अस्तेय','uh-STAY-yah','Non-stealing',{k:['nonstealing']}),
+  I('yamas','brahmacarya','Brahmacarya','ब्रह्मचर्य','bruh-muh-CHAR-yah','Celibacy — conserving personal/sacred energy',{k:['brahmacharya','celibacy']}),
+  I('yamas','aparigraha','Aparigraha','अपरिग्रह','uh-pah-ree-GRUH-hah','Non-grasping',{k:['nongrasping','non possessiveness']}),
+  // niyamas
+  I('niyamas','sauca','Śauca','शौच','SHOW-chah','Cleanliness',{k:['saucha','shaucha','cleanliness']}),
+  I('niyamas','santosa','Santoṣa','संतोष','sun-TOH-shah','Contentment / equanimity',{k:['santosha','samtosa','contentment']}),
+  I('niyamas','tapas','Tapas','तपस्','TUH-pus','Self-discipline',{k:['tapah','discipline']}),
+  I('niyamas','svadhyaya','Svādhyāya','स्वाध्याय','swahd-YAH-yah','Self-study',{k:['swadhyaya','self study']}),
+  I('niyamas','isvara','Īśvarapraṇidhāna','ईश्वरप्रणिधान','EESH-vah-rah prah-nee-DHAH-nah','Connection to God / something greater',{k:['ishvara','isvara','surrender']}),
+  // koshas
+  I('koshas','annamaya','Annamaya Kośa','अन्नमय कोश','UN-nah-mah-yah KOH-shah','Physical body',{k:['annamaya','physical']}),
+  I('koshas','pranamaya','Prāṇamaya Kośa','प्राणमय कोश','PRAH-nah-mah-yah KOH-shah','Energetic body',{k:['pranamaya','energetic','energy']}),
+  I('koshas','manomaya','Manomaya Kośa','मनोमय कोश','MUH-noh-mah-yah KOH-shah','Instinctive mind',{k:['manomaya','instinctive']}),
+  I('koshas','vijnanamaya','Vijñānamaya Kośa','विज्ञानमय कोश','vig-YAH-nah-mah-yah KOH-shah','Intuitive & altruistic mind',{k:['vijnanamaya','vignanamaya','intuitive']}),
+  I('koshas','anandamaya','Ānandamaya Kośa','आनन्दमय कोश','AH-nun-dah-mah-yah KOH-shah','Transcendental mind (bliss)',{k:['anandamaya','transcendental','bliss']}),
+  // vayus
+  I('vayus','udana','Udāna','उदान','oo-DAH-nah','Head, arms & legs'),
+  I('vayus','vprana','Prāṇa Vāyu','प्राण वायु','PRAH-nah VAH-yoo','Chest',{k:['prana','stula prana']}),
+  I('vayus','samana','Samāna','समान','sah-MAH-nah','Upper abdomen'),
+  I('vayus','apana','Apāna','अपान','ah-PAH-nah','Lower abdomen & pelvis'),
+  I('vayus','vyana','Vyāna','व्यान','VYAH-nah','Whole body — reserve supply that “fills up” the others'),
+  // nadis
+  I('nadis','ida','Iḍā Nāḍī','इडा नाडी','EE-dah NAH-dee','Mental channel',{note:'Left side · lunar',k:['ida','mental']}),
+  I('nadis','pingala','Piṅgalā Nāḍī','पिङ्गला नाडी','PING-gah-lah NAH-dee','Vital channel',{note:'Right side · solar',k:['pingala','vital']}),
+  I('nadis','susumna','Suṣumnā Nāḍī','सुषुम्ना नाडी','soo-SHOOM-nah NAH-dee','Spiritual channel',{note:'Central, along the spine',k:['sushumna','susumna','spiritual']}),
+  // bandhas
+  I('bandhas','mula','Mūla Bandha','मूल बन्ध','MOO-lah BUN-dah','Pelvic floor / root lock',{k:['mula','root']}),
+  I('bandhas','uddiyana','Uḍḍīyāna Bandha','उड्डीयान बन्ध','oo-dee-YAH-nah BUN-dah','Upward-flying / navel lock',{k:['uddiyana','navel']}),
+  I('bandhas','jalandhara','Jālandhara Bandha','जालन्धर बन्ध','jah-LUN-dah-rah BUN-dah','Chin lock',{k:['jalandhara','chin']}),
+  // chakras
+  I('chakras','muladhara','Mūlādhāra','मूलाधार','moo-lah-DHAH-rah','at the base of the pelvis',{x:{color:'Red'},k:['root']}),
+  I('chakras','svadhisthana','Svādhiṣṭhāna','स्वाधिष्ठान','swah-dish-TAH-nah','at the sacrum',{x:{color:'Orange'},k:['swadhisthana','sacral']}),
+  I('chakras','manipura','Maṇipūra','मणिपूर','mah-nee-POO-rah','behind & slightly above the navel',{x:{color:'Yellow'},k:['solar plexus']}),
+  I('chakras','anahata','Anāhata','अनाहत','ah-NAH-hah-tah','behind the sternum',{x:{color:'Green'},k:['heart']}),
+  I('chakras','visuddhi','Viśuddhi','विशुद्धि','vee-SHOOD-dee','behind the throat',{x:{color:'Blue'},k:['vishuddha','visuddha','throat']}),
+  I('chakras','ajna','Ājñā','आज्ञा','AHG-nyah','behind the spot between the eyebrows',{x:{color:'Purple / violet'},k:['ajna','agya','third eye']}),
+  I('chakras','sahasrara','Sahasrāra','सहस्रार','sah-has-RAH-rah','at the top of the head',{x:{color:'White'},k:['crown']}),
+  // doshas
+  I('doshas','vata','Vāta','वात','VAH-tah','space & air',{quals:['light','dry','cold','rough','dark','moving / changing','subtle']}),
+  I('doshas','pitta','Pitta','पित्त','PIT-tah','fire & water',{quals:['hot','sharp','slightly oily','pungent','sour','liquid','flowing but grounded']}),
+  I('doshas','kapha','Kapha','कफ','KUH-fah','water & earth',{quals:['unctuous (oily)','heavy','cool','stable','soft','sticky','dull']}),
+  // poses
+  I('poses','balasana','Bālāsana','बालासन','bah-LAH-sah-nah','Child’s pose'),
+  I('poses','virabhadrasana','Vīrabhadrāsana','वीरभद्रासन','veer-uh-buh-DRAH-sah-nah','Warrior (I, II, III)'),
+  I('poses','trikonasana','Trikoṇāsana','त्रिकोणासन','tree-koh-NAH-sah-nah','Triangle'),
+  I('poses','adho','Adho Mukha Śvānāsana','अधोमुखश्वानासन','AH-doh MOO-kah shvah-NAH-sah-nah','Downward-facing dog'),
+  I('poses','urdhva','Ūrdhva Mukha Śvānāsana','ऊर्ध्वमुखश्वानासन','OORD-vah MOO-kah shvah-NAH-sah-nah','Upward-facing dog'),
+  I('poses','vrksasana','Vṛkṣāsana','वृक्षासन','vrik-SHAH-sah-nah','Tree'),
+  // core
+  I('core','sutra','Yogaś citta-vṛtti-nirodhaḥ','योगश्चित्तवृत्तिनिरोधः','YOH-gush CHIT-tah VRIT-tee nee-ROH-dah','Yoga is the stilling of the turnings of the mind (Sūtra 1.2)'),
+  I('core','prana','Prāṇa','प्राण','PRAH-nah','The energy of existence — breath / life force'),
+  I('core','nadi','Nāḍī','नाडी','NAH-dee','The pathways through which energy flows in the body'),
+  I('core','bandha','Bandha','बन्ध','BUN-dah','“Lock” — energetic stability and support reached through muscular engagement'),
+  I('core','kosa','Kośa','कोश','KOH-shah','A sheath or layer of the self — there are five'),
+  I('core','atman','Ātman','आत्मन्','AHT-mun','The Self / soul / God within — what resides within the kośas'),
+  I('core','vayu','Vāyu','वायु','VAH-yoo','A “wind” — one of the five movements of prāṇa'),
+  I('core','cakra','Cakra','चक्र','CHUK-rah','An energy center (“wheel”) — there are seven main ones'),
+  I('core','dosa','Doṣa','दोष','DOH-shah','Āyurvedic constitution — Vāta, Pitta, Kapha'),
+  I('core','astanga','Aṣṭāṅga','अष्टाङ्ग','ush-TAHNG-gah','“Eight limbs” — Patañjali’s path of yoga'),
+  I('core','patanjali','Patañjali','पतञ्जलि','puh-TUN-juh-lee','Sage who compiled the Yoga Sūtras'),
+  I('core','sutraw','Sūtra','सूत्र','SOO-trah','“Thread” — a short aphorism; the Yoga Sūtras are a collection of them'),
+  // short answers (flashcards only)
+  I('qa','qa1','Why do the bandhas matter? How would you use them in your cueing?','','',
+    'Bandhas are muscle contractions that stabilize the spine and give energy a way to flow, which also calms the mind. In cueing, use them to help students activate energy and stabilize the body.'),
+  I('qa','qa2','How do the eight limbs show up in a yoga sequence?','','',
+    'Breath-work (prāṇāyāma) and posture work (āsana), often opening and closing with dhāraṇā and dhyāna (focus/meditation). A meditation that includes awareness of the senses begins to teach pratyāhāra. Theme the class around a yama or niyama.'),
+  I('qa','qa3','Physical signs of distress to watch for (at least 5)','','',
+    ['Excessive sweat','Inability to control the breath','Crunching, popping or grinding from joints','Shivering','Grunting','Facial strain','Drastic change in skin coloring','Drastic change in ability to focus','Trouble communicating']),
+  I('qa','qa4','What resides within the kośas?','','','Ātman — the Soul, God within.'),
+  I('qa','qa5','What is your personal definition of yoga, and how has it evolved since you began training?','','',
+    'This one is yours. Say your answer out loud in two or three sentences, then flip back and try it again tomorrow.'),
+  I('qa','qa6','Anatomy handout','','','You may be asked to name major bones and muscles — review that handout separately.')
+];
+const BY_ID = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+const deckItems = d => ITEMS.filter(i=>i.d===d);
+
+const SEQS = [
+  {name:'The 8 limbs, in order',          ids:deckItems('limbs').map(i=>i.id)},
+  {name:'The 7 cakras, root to crown',    ids:deckItems('chakras').map(i=>i.id)},
+  {name:'The 5 kośas, outermost to innermost', ids:deckItems('koshas').map(i=>i.id)},
+  {name:'The 5 yamas, in sūtra order',    ids:deckItems('yamas').map(i=>i.id)},
+  {name:'The 5 niyamas, in sūtra order',  ids:deckItems('niyamas').map(i=>i.id)}
+];
+
+const fromDeck = (d,prompt,goal) => ({prompt, goal, list:true,
+  ans: deckItems(d).map(i=>({label:i.t, keys:[i.t, ...(i.k||[])]}))});
+const RECALL = [
+  fromDeck('limbs','Name the 8 limbs of Patañjali’s Aṣṭāṅga Yoga'),
+  fromDeck('yamas','Name the 5 yamas'),
+  fromDeck('niyamas','Name the 5 niyamas'),
+  fromDeck('koshas','Name the 5 kośas'),
+  fromDeck('vayus','Name the 5 main vāyus'),
+  fromDeck('nadis','Name the 3 major nāḍīs'),
+  fromDeck('bandhas','Name the 3 bandhas'),
+  fromDeck('chakras','Name the 7 main cakras'),
+  fromDeck('poses','Name the 6 postures in Sanskrit (child’s, warrior, triangle, down dog, up dog, tree)'),
+  {prompt:'Name at least 5 physical signs of distress in a student', goal:5, ans:[
+    {label:'Excessive sweat',keys:['sweat']},
+    {label:'Can’t control breath',keys:['breath','breathing','gasp','pant']},
+    {label:'Joint crunching / popping',keys:['crunch','pop','grind','joint']},
+    {label:'Shivering',keys:['shiver','shak','trembl']},
+    {label:'Grunting',keys:['grunt']},
+    {label:'Facial strain',keys:['facial','face','grimac']},
+    {label:'Skin color change',keys:['skin','color','colour','pale','flush']},
+    {label:'Change in focus',keys:['focus','concentrat']},
+    {label:'Trouble communicating',keys:['communicat','speak','talk','speech']}
+  ]},
+  ...deckItems('doshas').map(d=>({prompt:`Name at least 3 qualities of ${d.t}`, goal:3,
+    ans:d.quals.map(q=>({label:q, keys:q.split(/[\s\/()]+/).filter(w=>w.length>2 && !['but','slightly'].includes(w))}))}))
+];
+
+/* ---------------- UTIL ---------------- */
+const $ = s => document.querySelector(s);
+const el = (tag, attrs={}, html='') => { const e=document.createElement(tag); for(const k in attrs){ if(k==='class') e.className=attrs[k]; else if(k.startsWith('on')) e[k]=attrs[k]; else e.setAttribute(k,attrs[k]); } if(html) e.innerHTML=html; return e; };
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; };
+const pick = a => a[Math.random()*a.length|0];
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+const loose = s => norm(s).replace(/\b(cakra|chakra|bandha|kosa|kosha|nadi|vayu)\b/g,'')
+  .replace(/h/g,'').replace(/w/g,'v').replace(/(.)\1+/g,'$1').replace(/[aeiou](?=\s|$)/g,'').replace(/\s/g,'');
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem('ytt26_'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem('ytt26_'+k, JSON.stringify(v)); }catch(e){} }
+};
+let toastT;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2200); }
+
+/* ---------------- SPEECH ---------------- */
+const SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+let voices = [];
+let voiceMode = store.get('voice','auto');
+let hasTTS = false;
+try{ hasTTS = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined'; }catch(e){}
+function loadVoices(){ try{ voices = hasTTS ? speechSynthesis.getVoices() || [] : []; }catch(e){ voices = []; } updateVoiceStatus(); }
+if(hasTTS){ try{ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }catch(e){ hasTTS=false; } }
+const hindiVoice = () => voices.find(v=>/^hi/i.test(v.lang));
+function updateVoiceStatus(){
+  const s = $('#voice-status'); if(!s) return;
+  if(!hasTTS){ s.textContent='This browser can’t speak — read the phonetic spelling instead.'; return; }
+  const hi = hindiVoice();
+  s.textContent = voiceMode==='english' ? 'Reading the phonetic spelling with an English voice.'
+    : hi ? `Using ${hi.name} (Hindi), which reads Sanskrit from the Devanagari script.`
+         : 'No Hindi voice on this device, so the phonetic spelling is read in English. Adding a Hindi voice in your device’s speech settings sounds much more natural.';
+}
+function speak(it, btn){
+  if(!hasTTS){ toast('Speech isn’t supported in this browser'); return; }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const hi = hindiVoice();
+  let u;
+  if(voiceMode!=='english' && hi && it.dv){
+    u = new SpeechSynthesisUtterance(it.dv); u.voice=hi; u.lang=hi.lang; u.rate=.72;
+  } else {
+    u = new SpeechSynthesisUtterance(it.s.toLowerCase());
+    const en = voices.find(v=>/^en[-_]US/i.test(v.lang)) || voices.find(v=>/^en/i.test(v.lang));
+    if(en) u.voice=en; u.lang='en-US'; u.rate=.78;
+  }
+  document.querySelectorAll('.say.playing').forEach(b=>b.classList.remove('playing'));
+  if(btn){ btn.classList.add('playing'); u.onend=u.onerror=()=>btn.classList.remove('playing'); }
+  try{ speechSynthesis.speak(u); }catch(e){ toast('Sound is blocked here — open the page in Safari or Chrome'); }
+}
+function sayBtn(it, small){
+  const b = el('button',{class:'say'+(small?' sm':''),'aria-label':'Pronounce '+it.t,title:'Hear it'},SPK);
+  b.onclick = e => { e.stopPropagation(); speak(it,b); };
+  return b;
+}
+
+/* ---------------- DECK CHIPS ---------------- */
+let chosen = store.get('decks', Object.keys(DECKS).filter(d=>d!=='qa'));
+const chipListeners = [];
+function renderChips(){
+  document.querySelectorAll('[data-decks]').forEach(box=>{
+    const allowQA = box.dataset.decks==='qa';
+    box.innerHTML='';
+    Object.entries(DECKS).forEach(([k,d])=>{
+      if(d.qa && !allowQA) return;
+      const c = el('button',{class:'chip','aria-pressed':chosen.includes(k)},d.name);
+      c.onclick = () => {
+        chosen = chosen.includes(k) ? chosen.filter(x=>x!==k) : [...chosen,k];
+        if(!chosen.filter(x=>x!=='qa').length && !allowQA){ chosen=[...chosen,k]; toast('Pick at least one topic'); }
+        if(!chosen.length){ chosen=[k]; toast('Pick at least one topic'); }
+        store.set('decks',chosen); renderChips(); chipListeners.forEach(f=>f(box.closest('section').id));
+      };
+      box.appendChild(c);
+    });
+  });
+}
+const pool = includeQA => ITEMS.filter(i=>chosen.includes(i.d) && (includeQA || i.d!=='qa'));
+
+/* ---------------- FLASHCARDS ---------------- */
+const fc = {queue:[], cur:null, flipped:false, enFirst:store.get('enFirst',false), total:0, done:0};
+let known = store.get('known',{});
+function fcStart(){
+  const items = pool(true);
+  fc.queue = shuffle(items); fc.total = items.length; fc.done = 0; fc.firstTry = 0; fc.missed = new Set();
+  fcNext();
+}
+function fcNext(){ fc.cur = fc.queue.shift() || null; fc.flipped = false; fcRender(); }
+function fcRender(){
+  const area = $('#fc-area'); area.innerHTML='';
+  const knownCount = pool(true).filter(i=>(known[i.id]||0)>0).length;
+  $('#fc-count').textContent = `${fc.done} of ${fc.total} this round · ${knownCount} known overall`;
+  $('#fc-bar').style.width = (fc.total? fc.done/fc.total*100 : 0)+'%';
+  $('#fc-dir').setAttribute('aria-pressed', fc.enFirst);
+  if(!fc.cur){
+    const box = el('div',{class:'panel done-box'},
+      `<div class="big">${fc.firstTry} / ${fc.total}</div><p>known on the first try.</p>`);
+    const again = el('button',{class:'btn primary'},'Go again'); again.onclick = fcStart;
+    box.appendChild(again); area.appendChild(box); return;
+  }
+  const it = fc.cur, isQA = it.d==='qa';
+  const card = el('div',{class:'panel fc',role:'button',tabindex:'0','aria-label':'Flip card'});
+  card.appendChild(el('span',{class:'label'},DECKS[it.d].name));
+  const front = isQA ? 'q' : (fc.enFirst ? 'en' : 'sk');
+  const side = fc.flipped ? (front==='sk'?'en':front==='en'?'sk':'a') : front;
+  if(side==='q'){
+    card.appendChild(el('div',{class:'q'},esc(it.t)));
+  } else if(side==='a'){
+    const body = Array.isArray(it.m) ? '<ul>'+it.m.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>' : esc(it.m);
+    card.appendChild(el('div',{class:'qa-text'},body));
+  } else if(side==='sk'){
+    card.appendChild(el('div',{class:'term'},esc(it.t)));
+    if(it.dv) card.appendChild(el('div',{class:'deva',lang:'sa'},it.dv));
+    const r = el('div',{class:'row',style:'justify-content:center'}); r.appendChild(el('span',{class:'phon'},esc(it.s))); r.appendChild(sayBtn(it,true));
+    card.appendChild(r);
+    if(fc.flipped) card.appendChild(el('div',{class:'ans small'},esc(cap(it.m))));
+  } else {
+    card.appendChild(el('div',{class:'ans'},esc(cap(it.m))));
+    const f = facts(it); if(f) card.appendChild(f);
+  }
+  if(fc.flipped && side==='sk'){ const f=facts(it); if(f) card.appendChild(f); }
+  if(!fc.flipped) card.appendChild(el('div',{class:'hint'},'tap to flip'));
+  card.onclick = () => { fc.flipped=!fc.flipped; fcRender(); };
+  card.onkeydown = e => { if(e.key==='Enter'){ e.preventDefault(); card.onclick(); } };
+  area.appendChild(card);
+  const acts = el('div',{class:'fc-actions'});
+  const a = el('button',{class:'btn again'},'Again'); a.onclick = () => fcGrade(false);
+  const g = el('button',{class:'btn got'},'Got it'); g.onclick = () => fcGrade(true);
+  if(!fc.flipped){ a.disabled = g.disabled = true; }
+  acts.append(a,g); area.appendChild(acts);
+}
+const cap = s => typeof s==='string' ? s.charAt(0).toUpperCase()+s.slice(1) : s;
+function facts(it){
+  const list = [];
+  if(it.x) Object.entries(it.x).forEach(([k,v])=>list.push(`${k}: ${v}`));
+  if(it.note) list.push(it.note);
+  if(it.quals) list.push(...it.quals);
+  if(!list.length) return null;
+  const f = el('div',{class:'facts'}); list.forEach(x=>f.appendChild(el('span',{class:'fact'},esc(x)))); return f;
+}
+function fcGrade(ok){
+  const it = fc.cur;
+  if(ok){
+    known[it.id]=(known[it.id]||0)+1; fc.done++;
+    if(!fc.missed.has(it.id)) fc.firstTry++;
+  } else {
+    known[it.id]=0; fc.missed.add(it.id);
+    fc.queue.splice(Math.min(3,fc.queue.length),0,it);
+  }
+  store.set('known',known); fcNext();
+}
+$('#fc-dir').onclick = () => { fc.enFirst=!fc.enFirst; store.set('enFirst',fc.enFirst); fc.flipped=false; fcRender(); };
+document.addEventListener('keydown', e => {
+  if(current!=='cards' || /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) || !fc.cur) return;
+  if(e.key===' '){ e.preventDefault(); fc.flipped=!fc.flipped; fcRender(); }
+  else if(e.key==='1' && fc.flipped) fcGrade(false);
+  else if(e.key==='2' && fc.flipped) fcGrade(true);
+  else if(e.key.toLowerCase()==='s' && fc.cur.s) speak(fc.cur, document.querySelector('#fc-area .say'));
+});
+
+/* ---------------- QUIZ ---------------- */
+const qz = {n:0, score:0, streak:0, best:store.get('quizBest',null)};
+function fill(tpl,it){ return tpl.replace('{t}',esc(it.t)).replace('{m}',esc(it.m)); }
+function options(correct, candidates){
+  const uniq = [...new Set(candidates.filter(c=>c && c!==correct))];
+  return shuffle([correct, ...shuffle(uniq).slice(0,3)]);
+}
+function makeQuestion(){
+  const items = pool(false);
+  const it = pick(items);
+  const deck = DECKS[it.d];
+  const same = deckItems(it.d);
+  const others = ITEMS.filter(i=>i.d!=='qa');
+  const kinds = ['t2m','m2t','t2m','m2t','cat'];
+  if(it.x) Object.keys(it.x).forEach(k=>kinds.push('x:'+k,'x:'+k));
+  if(it.quals) kinds.push('qual','qual','qual');
+  const kind = pick(kinds);
+  const fillPool = (vals, alt) => vals.length>=4 ? vals : vals.concat(shuffle(alt));
+  if(kind==='t2m') return {it, prompt:fill(deck.t2m,it), answer:cap(it.m),
+      opts:options(cap(it.m), fillPool(same.map(i=>cap(i.m)), others.map(i=>cap(i.m))))};
+  if(kind==='m2t') return {it, prompt:fill(deck.m2t,it), answer:it.t,
+      opts:options(it.t, fillPool(same.map(i=>i.t), others.map(i=>i.t)))};
+  if(kind.startsWith('x:')){ const k=kind.slice(2);
+      return {it, prompt:XQ[k](esc(it.t)), answer:it.x[k], opts:options(it.x[k], same.map(i=>i.x[k]))}; }
+  if(kind==='qual'){ const qs = shuffle(it.quals).slice(0,3);
+      return {it, prompt:`Which doṣa is <b>${qs.map(esc).join(', ')}</b>?`, answer:it.t, opts:shuffle(same.map(i=>i.t))}; }
+  const names = Object.entries(DECKS).filter(([k,d])=>!d.qa && k!=='core' && k!=='poses').map(([,d])=>d.name);
+  return {it, prompt:`<b>${esc(it.t)}</b> belongs to which group?`, answer:deck.name, opts:options(deck.name, names)};
+}
+function quizStart(){ qz.n=0; qz.score=0; qz.streak=0; quizAsk(); }
+function quizAsk(){
+  const area = $('#quiz-area'); area.innerHTML='';
+  if(qz.n>=10){
+    if(qz.best==null || qz.score>qz.best){ qz.best=qz.score; store.set('quizBest',qz.best); }
+    const box = el('div',{class:'panel done-box'},`<div class="big">${qz.score} / 10</div><p>Best so far: ${qz.best} / 10</p>`);
+    const b = el('button',{class:'btn primary'},'New quiz'); b.onclick=quizStart; box.appendChild(b); area.appendChild(box); return;
+  }
+  let q; for(let t=0;t<20;t++){ q=makeQuestion(); if(q.opts.length>=2) break; }
+  const p = el('div',{class:'panel'});
+  p.appendChild(el('div',{class:'row small'},`<span class="stat">Question ${qz.n+1} of 10</span><span class="spacer"></span><span class="stat">Score ${qz.score}${qz.streak>1?` · streak ${qz.streak}`:''}</span>`));
+  p.appendChild(el('div',{class:'qprompt'},q.prompt));
+  const opts = el('div',{class:'opts'});
+  q.opts.forEach(o=>{
+    const b = el('button',{class:'opt'},esc(o));
+    b.onclick = () => {
+      const right = o===q.answer;
+      opts.querySelectorAll('.opt').forEach(x=>{ x.disabled=true; if(x.textContent===q.answer) x.classList.add('right'); });
+      if(!right) b.classList.add('wrong');
+      if(right){ qz.score++; qz.streak++; } else qz.streak=0;
+      qz.n++;
+      const ex = el('div',{class:'explain'});
+      if(q.it.s) ex.appendChild(sayBtn(q.it));
+      ex.appendChild(el('div',{style:'flex:1'},`<b>${esc(q.it.t)}</b> — ${esc(cap(q.it.m))}${q.it.s?`<div class="phon">${esc(q.it.s)}</div>`:''}`));
+      const nx = el('button',{class:'btn primary'},qz.n>=10?'See score':'Next'); nx.onclick=quizAsk;
+      ex.appendChild(nx); p.appendChild(ex); nx.focus();
+    };
+    opts.appendChild(b);
+  });
+  p.appendChild(opts); area.appendChild(p);
+}
+
+/* ---------------- MATCH ---------------- */
+const mt = {sel:null, left:0, miss:0, t0:0, timer:null};
+function matchStart(){
+  clearInterval(mt.timer);
+  const cands = shuffle(pool(false).filter(i=>i.d!=='core'));
+  const chosenItems = []; const seenM = new Set();
+  for(const i of cands){ if(!seenM.has(i.m)){ seenM.add(i.m); chosenItems.push(i); } if(chosenItems.length===6) break; }
+  const tiles = shuffle(chosenItems.flatMap(i=>[{id:i.id,txt:i.t,sk:true},{id:i.id,txt:cap(i.m)}]));
+  mt.left = chosenItems.length; mt.miss=0; mt.sel=null; mt.t0=0;
+  $('#m-time').textContent='0.0s'; $('#m-miss').textContent='0 misses';
+  const best = store.get('matchBest',null); $('#m-best').textContent = best? `Best ${best.toFixed(1)}s` : '';
+  const g = el('div',{class:'grid'});
+  tiles.forEach(t=>{
+    const b = el('button',{class:'tile'+(t.sk?' sk':'')},esc(t.txt)); b._t=t;
+    b.onclick = () => matchTap(b);
+    g.appendChild(b);
+  });
+  const area=$('#match-area'); area.innerHTML=''; area.appendChild(g);
+}
+function matchTap(b){
+  if(b.classList.contains('done')) return;
+  if(!mt.t0){ mt.t0=performance.now(); mt.timer=setInterval(()=>$('#m-time').textContent=((performance.now()-mt.t0)/1000).toFixed(1)+'s',100); }
+  if(b._t.sk) speak(BY_ID[b._t.id]);
+  if(!mt.sel){ mt.sel=b; b.classList.add('sel'); return; }
+  if(mt.sel===b){ b.classList.remove('sel'); mt.sel=null; return; }
+  const a = mt.sel; a.classList.remove('sel'); mt.sel=null;
+  if(a._t.id===b._t.id && a._t.sk!==b._t.sk){
+    a.classList.add('done'); b.classList.add('done'); a.disabled=b.disabled=true;
+    if(--mt.left===0){
+      clearInterval(mt.timer);
+      const s=(performance.now()-mt.t0)/1000, best=store.get('matchBest',null);
+      if(mt.miss===0 && (best==null||s<best)){ store.set('matchBest',s); $('#m-best').textContent=`Best ${s.toFixed(1)}s`; toast('New best — clean board!'); }
+      else toast(`Done in ${s.toFixed(1)}s with ${mt.miss} miss${mt.miss===1?'':'es'}`);
+    }
+  } else {
+    mt.miss++; $('#m-miss').textContent=`${mt.miss} miss${mt.miss===1?'':'es'}`;
+    [a,b].forEach(x=>{ x.classList.remove('miss'); void x.offsetWidth; x.classList.add('miss'); });
+  }
+}
+$('#m-new').onclick = matchStart;
+
+/* ---------------- ORDER ---------------- */
+const od = {seq:0, placed:[], checked:false};
+SEQS.forEach((s,i)=>$('#o-seq').appendChild(el('option',{value:i},s.name)));
+$('#o-seq').onchange = e => { od.seq=+e.target.value; orderStart(); };
+function orderStart(){ od.placed=[]; od.checked=false; od.order=shuffle(SEQS[od.seq].ids); orderRender(); }
+function orderRender(){
+  const ids = SEQS[od.seq].ids, area=$('#order-area'); area.innerHTML='';
+  const slots = el('div',{class:'slots'});
+  ids.forEach((correct,i)=>{
+    const id = od.placed[i];
+    const s = el('button',{class:'slot'+(id?' filled':'')});
+    if(id){
+      const it = BY_ID[id];
+      s.innerHTML = `<span><span class="term" style="font-size:18px">${esc(it.t)}</span><span class="m">${esc(cap(it.m))}</span></span>`;
+      if(od.checked) s.classList.add(id===correct?'right':'wrong');
+      s.onclick = () => { if(od.checked) return; od.placed.splice(i,1); orderRender(); };
+    }
+    slots.appendChild(s);
+  });
+  area.appendChild(slots);
+  const pl = el('div',{class:'pool'});
+  od.order.filter(id=>!od.placed.includes(id)).forEach(id=>{
+    const b = el('button',{class:'btn'},esc(BY_ID[id].t));
+    b.onclick = () => { od.placed.push(id); orderRender(); };
+    pl.appendChild(b);
+  });
+  area.appendChild(pl);
+  const row = el('div',{class:'row',style:'margin-top:16px'});
+  if(!od.checked){
+    const c = el('button',{class:'btn primary'},'Check'); c.disabled = od.placed.length<ids.length;
+    c.onclick = () => { od.checked=true; orderRender();
+      const right = od.placed.filter((id,i)=>id===ids[i]).length;
+      toast(right===ids.length ? 'All in order.' : `${right} of ${ids.length} in the right spot`); };
+    row.appendChild(c);
+  }
+  const r = el('button',{class:'btn'},od.checked?'Try again':'Reset'); r.onclick = orderStart; row.appendChild(r);
+  area.appendChild(row);
+}
+
+/* ---------------- RECALL ---------------- */
+const rc = {i:0, hit:new Set(), shown:false};
+RECALL.forEach((r,i)=>$('#r-prompt').appendChild(el('option',{value:i},r.prompt)));
+$('#r-prompt').onchange = e => { rc.i=+e.target.value; recallStart(); };
+function recallStart(){ rc.hit=new Set(); rc.shown=false; recallRender(); setTimeout(()=>$('#r-in') && $('#r-in').focus(),0); }
+function recallMatch(guess){
+  const g = loose(guess); if(g.length<3) return -1;
+  const r = RECALL[rc.i];
+  for(let i=0;i<r.ans.length;i++){
+    if(rc.hit.has(i)) continue;
+    for(const key of r.ans[i].keys){
+      const k = loose(key); if(k.length<3) continue;
+      if(g===k || (r.list ? (g.length>=4 && (k.includes(g)||g.includes(k))) : g.includes(k))) return i;
+    }
+  }
+  return -1;
+}
+function recallRender(){
+  const r = RECALL[rc.i], goal = r.goal || r.ans.length, area=$('#recall-area'); area.innerHTML='';
+  const p = el('div',{class:'panel'});
+  p.appendChild(el('div',{class:'qprompt',style:'margin-bottom:4px'},esc(r.prompt)));
+  p.appendChild(el('div',{class:'small stat'},`${rc.hit.size} / ${goal}${r.goal&&r.goal<r.ans.length?` needed (${r.ans.length} possible)`:''}`));
+  const bl = el('div',{class:'blanks'});
+  r.ans.forEach((a,i)=>{
+    if(!r.list && !rc.hit.has(i) && !rc.shown) return;
+    const b = el('span',{class:'blank'+(rc.hit.has(i)?' hit':rc.shown?' shown':'')},esc(a.label)+'');
+    if(r.list && (rc.hit.has(i)||rc.shown)){ const it = ITEMS.find(x=>x.t===a.label); if(it&&it.s){ b.style.cursor='pointer'; b.title='Hear it'; b.onclick=()=>speak(it);} }
+    bl.appendChild(b);
+  });
+  if(!r.list && !rc.hit.size && !rc.shown) bl.appendChild(el('span',{class:'small'},'Your answers will collect here.'));
+  p.appendChild(bl);
+  const complete = rc.hit.size>=goal;
+  if(!rc.shown && !complete){
+    const f = el('form',{class:'inp'});
+    const inp = el('input',{id:'r-in',placeholder:'Type one answer, press Enter',autocomplete:'off',autocapitalize:'off',spellcheck:'false'});
+    f.appendChild(inp); f.appendChild(el('button',{class:'btn primary',type:'submit'},'Enter'));
+    f.onsubmit = e => { e.preventDefault(); const v=inp.value.trim(); if(!v) return;
+      const idx = recallMatch(v);
+      if(idx>=0){ rc.hit.add(idx); recallRender(); const n=$('#r-in'); if(n) n.focus(); }
+      else { inp.classList.remove('miss'); void inp.offsetWidth; inp.classList.add('miss'); inp.select(); } };
+    p.appendChild(f);
+  } else {
+    p.appendChild(el('p',{style:'margin:4px 0 0;font-weight:700;color:'+(complete?'var(--ok)':'var(--bad)')}, complete?'You got it.':'Revealed — try it again in a minute.'));
+  }
+  const row = el('div',{class:'row',style:'margin-top:14px'});
+  if(!rc.shown && !complete){ const s=el('button',{class:'btn'},'Show answers'); s.onclick=()=>{rc.shown=true; recallRender();}; row.appendChild(s); }
+  const again=el('button',{class:'btn'},'Restart'); again.onclick=recallStart; row.appendChild(again);
+  const nx=el('button',{class:'btn primary'},'Next prompt'); nx.onclick=()=>{ rc.i=(rc.i+1)%RECALL.length; $('#r-prompt').value=rc.i; recallStart(); }; row.appendChild(nx);
+  p.appendChild(row); area.appendChild(p);
+}
+
+/* ---------------- GLOSSARY ---------------- */
+function glossRender(){
+  const q = norm($('#g-q').value), area=$('#gloss-area'); area.innerHTML='';
+  let any=false;
+  Object.entries(DECKS).forEach(([k,d])=>{
+    if(d.qa) return;
+    const items = deckItems(k).filter(i=>!q || norm(i.t+' '+i.m+' '+(i.k||[]).join(' ')).includes(q));
+    if(!items.length) return; any=true;
+    area.appendChild(el('h3',{},d.name));
+    items.forEach(it=>{
+      const row = el('div',{class:'gi'});
+      row.appendChild(sayBtn(it));
+      row.appendChild(el('div',{},`<span class="t">${esc(it.t)}</span><span class="d" lang="sa">${it.dv}</span><div class="p">${esc(it.s)}</div><div class="mm">${esc(cap(it.m))}${it.x&&it.x.color?` · ${esc(it.x.color)}`:''}</div>`));
+      area.appendChild(row);
+    });
+  });
+  if(!any) area.appendChild(el('p',{class:'small'},'Nothing matches that.'));
+}
+$('#g-q').oninput = glossRender;
+
+/* ---------------- TABS ---------------- */
+let current = 'cards';
+const starters = {cards:fcStart, quiz:quizStart, match:matchStart, order:orderStart, recall:recallStart, gloss:glossRender};
+const started = {};
+function show(tab){
+  if(!starters[tab]) tab='cards';
+  current = tab;
+  document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===tab));
+  document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab));
+  if(!started[tab]){ started[tab]=true; starters[tab](); }
+  try{ if(location.hash!=='#'+tab) history.replaceState(null,'','#'+tab); }catch(e){}
+}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+chipListeners.push(sec => { if(sec==='cards') fcStart(); if(sec==='quiz') quizStart(); if(sec==='match') matchStart(); });
+
+$('#voice-mode').value = voiceMode;
+$('#voice-mode').onchange = e => { voiceMode=e.target.value; store.set('voice',voiceMode); updateVoiceStatus(); };
+$('#voice-test').onclick = () => speak(BY_ID.svadhisthana);
+
+renderChips();
+updateVoiceStatus();
+let startTab = 'cards'; try{ startTab = location.hash.slice(1); }catch(e){}
+show(startTab);
+</script>
+</body>
+</html>
