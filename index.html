@@ -25,6 +25,15 @@ button{font:inherit;color:inherit;cursor:pointer}
 .wrap{max-width:760px;margin:0 auto;padding:20px 16px 80px}
 header h1{font-family:Fraunces,Georgia,serif;font-weight:650;font-size:30px;margin:4px 0 2px;letter-spacing:-.01em}
 header p{margin:0;color:var(--muted);font-size:15px}
+header .exam{margin-top:10px;display:inline-block;background:var(--chip);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:14px}
+.ck{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.ck input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--ok);flex:none}
+.ck b{display:block}
+.ck span.d{color:var(--muted);font-size:15px}
+.ck.on b{text-decoration:line-through;color:var(--muted)}
+.gfacts{margin:18px 0 0;padding-left:20px;font-size:15px}
+.gfacts li{margin:6px 0}
+.qa-text .tip{display:block;margin-top:10px;font-size:14px;color:var(--muted)}
 nav{display:flex;gap:4px;overflow-x:auto;margin:18px -16px 0;padding:0 16px 2px;border-bottom:1px solid var(--line);scrollbar-width:none}
 nav::-webkit-scrollbar{display:none}
 nav button{background:none;border:0;padding:10px 12px;border-bottom:2.5px solid transparent;color:var(--muted);white-space:nowrap;font-weight:700;font-size:15px}
@@ -136,6 +145,7 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
 <header>
   <h1>Yoga Teacher Training</h1>
   <p>2026 study guide — practice until it sticks.</p>
+  <p class="exam">Written exam on your October weekend · in person · no notes · <b>70% to pass</b></p>
 </header>
 
 <nav id="nav">
@@ -145,6 +155,7 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
   <button data-tab="order">Order</button>
   <button data-tab="recall">Recall</button>
   <button data-tab="gloss">Pronounce</button>
+  <button data-tab="grad">Graduation</button>
 </nav>
 
 <section id="cards">
@@ -196,6 +207,20 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
   <div class="gl" id="gloss-area"></div>
 </section>
 
+<section id="grad">
+  <h2>Graduation checklist</h2>
+  <p class="sub">To get your teaching certificate. Tap to check things off — saved on this device.</p>
+  <div id="grad-area"></div>
+  <ul class="gfacts">
+    <li><b>Deadline:</b> October 31, 2027 — but aim for within 90 days while it’s fresh.</li>
+    <li>Send <b>everything in ONE email</b> to teachertraining@bellaprana.com, subject <b>“Graduation Submission”</b>. Separate emails won’t be accepted.</li>
+    <li>Classes must be at least <b>60 minutes</b> (60–75 is typical, 90 is fine). No 30-minute classes.</li>
+    <li>Teach to the camera as if it’s a live class — no voice-over. Only the private session needs a real participant.</li>
+    <li>They’re looking for: safety, logical sequences, cues that make sense to everyone, a voice they can hear, and breath as the foundation.</li>
+    <li>Virtual lectures: access until October 2027. Virtual studio classes: access until December 31, 2026.</li>
+  </ul>
+</section>
+
 <footer>
   <label>Voice:
     <select id="voice-mode">
@@ -225,7 +250,13 @@ const DECKS = {
   doshas:  {name:'Doṣas',          t2m:'Which elements make up <b>{t}</b>?',      m2t:'Which doṣa is made of {m}?'},
   poses:   {name:'Postures',       t2m:'What is <b>{t}</b> in English?',          m2t:'What is the Sanskrit name for {m}?'},
   core:    {name:'Core concepts',  t2m:'What is <b>{t}</b>?',                     m2t:'Which term means: {m}?'},
-  qa:      {name:'Short answers',  qa:true}
+  poses2:  {name:'More postures',  t2m:'What is <b>{t}</b> in English?',          m2t:'What is the Sanskrit name for {m}?'},
+  arc:     {name:'Arc of a class', t2m:'What happens during <b>{t}</b>?',         m2t:'Which part of class is this: {m}?'},
+  hips:    {name:'Open vs. closed hip', only:['t2m'], t2m:'Is <b>{t}</b> an open-hip or closed-hip posture?'},
+  qa:      {name:'Short answers',  qa:true},
+  teach:   {name:'Teaching & poses', qa:true},
+  seqqa:   {name:'Sequencing',     qa:true},
+  ethics:  {name:'Philosophy & ethics', qa:true}
 };
 const XQ = { color: t => `What color is <b>${t}</b>?` };
 
@@ -304,6 +335,61 @@ const ITEMS = [
   I('core','astanga','Aṣṭāṅga','अष्टाङ्ग','ush-TAHNG-gah','“Eight limbs” — Patañjali’s path of yoga'),
   I('core','patanjali','Patañjali','पतञ्जलि','puh-TUN-juh-lee','Sage who compiled the Yoga Sūtras'),
   I('core','sutraw','Sūtra','सूत्र','SOO-trah','“Thread” — a short aphorism; the Yoga Sūtras are a collection of them'),
+  I('core','vinyasa','Vinyāsa','विन्यास','vin-YAH-sah','Linking breath with movement; a flowing style of class'),
+  I('core','gita','Bhagavad Gītā','भगवद्गीता','BHUG-uh-vud GEE-tah','Spiritual text where Lord Krishna advises the warrior Arjuna on the battlefield about duty, the nature of the soul and God, and the paths to liberation'),
+  I('core','krsna','Kṛṣṇa','कृष्ण','KRISH-nah','The god who teaches Arjuna in the Bhagavad Gītā'),
+  I('core','arjuna','Arjuna','अर्जुन','AR-joo-nah','The warrior who is advised by Krishna in the Bhagavad Gītā'),
+  I('core','vairagya','Vairāgya','वैराग्य','vai-RAHG-yah','Non-attachment — letting go of clinging to outcomes'),
+  // more postures
+  I('poses2','malasana','Mālāsana','मालासन','mah-LAH-sah-nah','Yogi squat / garland — a hip opener'),
+  I('poses2','bakasana','Bakāsana','बकासन','buh-KAH-sah-nah','Crow posture'),
+  I('poses2','ardhacandra','Ardha Candrāsana','अर्धचन्द्रासन','AR-dah chun-DRAH-sah-nah','Half moon'),
+  I('poses2','savasana','Śavāsana','शवासन','shah-VAH-sah-nah','Corpse pose — final rest'),
+  // arc of a class (Intro to Sequencing)
+  I('arc','arrival','Arrival & centering','','','Breath awareness and grounding; gentle mobility; connect breath to movement early'),
+  I('arc','warmup','Warm-up','','','Gradual heat (Sun Salutations are ideal); mobilize major joints; introduce patterns that come back later'),
+  I('arc','build','Build toward peak','','','Progressive layering — climb a ladder of postures that prepare the muscles and joints the peak needs'),
+  I('arc','peak','Peak pose','','','Clear setup cued from the ground up; offer stages (“option to”); allow time to explore, like a workshop'),
+  I('arc','cooldown','Cool down','','','Counterposes to the peak; slow the nervous system; move to the floor (bridge, supine twists)'),
+  I('arc','savasana_arc','Savasana','','','Integration with breathwork, stillness, and closing'),
+  // open vs closed hip
+  I('hips','h1','Downward dog','','','Closed hip'),
+  I('hips','h2','Pyramid','','','Closed hip'),
+  I('hips','h3','Warrior I','','','Closed hip'),
+  I('hips','h4','Warrior III','','','Closed hip'),
+  I('hips','h5','Warrior II','','','Open hip'),
+  I('hips','h6','Reverse Warrior','','','Open hip'),
+  I('hips','h7','Triangle','','','Open hip'),
+  I('hips','h8','Half moon','','','Open hip'),
+  // teaching & poses (flashcards)
+  I('teach','t1','Three variations / adaptations of child’s posture','','',['Table top','Bolster under the chest','Blanket behind the knees','Block under the hips']),
+  I('teach','t2','Three alternatives to down dog with the same purpose / benefits','','',['Forearms on the mat instead of palms','Knees down in a “longer” table top','Child’s posture']),
+  I('teach','t3','Three postures to warm up students at the start of class','','',['Sun Salutations','A gentle twist','A hip rotation, a fold, or a chest opener','(Cat-cow and child’s pose work well too)','Your guide leaves this open — pick three you’d really teach.']),
+  I('teach','t4','Three postures that should only be done once the body is warmed up','','',['Peak postures — arm balances, inversions, deep hip openers','e.g. Crow, handstand, full splits, compass, deep backbends like camel','Your guide leaves this open — pick three you’d really teach.']),
+  I('teach','t5','Two postures that complement triangle','','',['Five-pointed star','Half moon','(Both are open-hip, like triangle)']),
+  I('teach','t6','Two postures that prepare the body for full splits','','',['Pyramid','Low lunge / half splits']),
+  I('teach','t7','Poses that prepare for crow (at least 3)','','',['Low lunge — hip flexion','Down dog / plank transitions — wrist extension and shoulder strength','Yogi squat (Mālāsana) — hip opening']),
+  I('teach','t8','How would you cue a power class to offer handstands?','','',['Hands shoulder-width, fingers spread wide, press through the fingertips','Stack shoulders over wrists','Core on — draw the ribs in, hug the midline','Kick-up tips: start at the wall, small bent-knee hops, one leg leads','Always offer options and stages','Come up with your own — these are ideas to start from.']),
+  I('teach','t9','Three things in a beginners class that help them feel at ease, educated, and empowered','','',['Grounding — breath and arrival at the start','Cueing from the ground up','Offering options and props (“option to…”)','Explaining what to expect and naming poses in English and Sanskrit']),
+  I('teach','t10','Something you’d offer in a private session that you may not in a group','','',['A sequence tailored to their body, goals, or injuries','Slower pace and personal alignment feedback','Time to workshop a pose they’re working toward']),
+  I('teach','t11','Something you learned about making yoga accessible to all body types','','',['Props — blocks, bolsters, blankets','Offer stages and options, never one “right” shape','Use alternatives like the child’s pose and down dog options above']),
+  // sequencing (flashcards)
+  I('seqqa','s1','What is the peak posture?','','','The moment in class when the body has the largest / most challenging ask — often an arm balance, inversion, or deep hip opener. It applies to every class level.'),
+  I('seqqa','s2','How do you plan toward a peak posture?','','','Reverse engineer from the most challenging moment: choose postures that prepare the main joints and muscles the peak will use.'),
+  I('seqqa','s3','A yoga class in thirds','','',['1 — Warm up and build heat','2 — Standing sequences and peak posture (no more than 4 postures to start)','3 — Cool down, floor work, savasana']),
+  I('seqqa','s4','Open hip and closed hip rule of thumb','','',['Sequence open-hip postures together and closed-hip postures together — safer, simpler transitions','Closed: Down dog → Pyramid → Warrior I → Warrior III','Open: Warrior II → Reverse Warrior → Triangle']),
+  I('seqqa','s5','Style of class: physical vs. energetic','','',['Physical style — sets the challenge level','Energetic style — grounding, energizing, or cooling']),
+  I('seqqa','s6','Key principles of smart sequencing','','',['Simple → complex','Stable → dynamic','Large muscle groups → smaller muscle groups','Symmetry and balance','Clear transitions','Nervous system awareness (stabilize, stimulate, soothe)']),
+  I('seqqa','s7','Common sequencing mistakes','','',['Peak pose too early','Insufficient preparation','Transitions not natural in the joints','Overcomplicating transitions','Forgetting counterpostures']),
+  I('seqqa','s8','Example of building toward compass pose','','','Gentle butterfly → pigeon cradle rock → rotate the knee in down dog → lunge with knee dropping open → chair with ankle on knee fold → tree balance → compass on the ground in the last third of class.'),
+  // philosophy & ethics (flashcards)
+  I('ethics','e1','What is the Bhagavad Gītā?','','','A spiritual text where Lord Krishna advises the warrior Arjuna on a battlefield about duty, the nature of the soul and God, and the paths to spiritual liberation. (You’ll learn more at your October weekend.)'),
+  I('ethics','e2','What does it mean to practice non-attachment?','','','Doing your practice and your work fully without clinging to the outcome. It connects to aparigraha (non-grasping) and vairāgya, and to the Gītā’s teaching of acting without attachment to the fruits of action.<tip>Put it in your own words.</tip>'),
+  I('ethics','e3','How does the yama of non-violence (ahiṁsā) apply in your daily life?','','','Your answer. Ideas to start from: kind self-talk, not forcing your body in a pose, compassionate speech, patience with others.'),
+  I('ethics','e4','To whom, and where, would you honor as the source of our sacred practice?','','','India — the ancient sages and teachers who passed yoga down, including Patañjali — and the lineage of teachers who taught you.<tip>Put it in your own words.</tip>'),
+  I('ethics','e5','Two examples of what appropriation looks like in yoga','','',['Using sacred symbols or deities (like Om or Ganesha) as decoration or fashion without understanding them','Selling yoga only as fitness while erasing its spiritual and Indian roots','Using Sanskrit or “Namaste” casually without knowing the meaning']),
+  I('ethics','e6','If Namaste is not within your personal culture, what phrase might you close class with?','','','Your answer — the training asks you to avoid Namaste and find a closing authentic to you (for example, a simple “thank you for practicing with me”).'),
+  I('ethics','e7','How will you impact the world more intentionally after this deep dive into yogic philosophy?','','','Your answer. Practice saying it out loud in two or three sentences.'),
   // short answers (flashcards only)
   I('qa','qa1','Why do the bandhas matter? How would you use them in your cueing?','','',
     'Bandhas are muscle contractions that stabilize the spine and give energy a way to flow, which also calms the mind. In cueing, use them to help students activate energy and stabilize the body.'),
@@ -312,7 +398,7 @@ const ITEMS = [
   I('qa','qa3','Physical signs of distress to watch for (at least 5)','','',
     ['Excessive sweat','Inability to control the breath','Crunching, popping or grinding from joints','Shivering','Grunting','Facial strain','Drastic change in skin coloring','Drastic change in ability to focus','Trouble communicating']),
   I('qa','qa4','What resides within the kośas?','','','Ātman — the Soul, God within.'),
-  I('qa','qa5','What is your personal definition of yoga, and how has it evolved since you began training?','','',
+  I('ethics','qa5','What is your personal definition of yoga, and how has it evolved since you began training?','','',
     'This one is yours. Say your answer out loud in two or three sentences, then flip back and try it again tomorrow.'),
   I('qa','qa6','Anatomy handout','','','You may be asked to name major bones and muscles — review that handout separately.')
 ];
@@ -320,6 +406,7 @@ const BY_ID = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 const deckItems = d => ITEMS.filter(i=>i.d===d);
 
 const SEQS = [
+  {name:'The arc of a class, start to finish', ids:deckItems('arc').map(i=>i.id)},
   {name:'The 8 limbs, in order',          ids:deckItems('limbs').map(i=>i.id)},
   {name:'The 7 cakras, root to crown',    ids:deckItems('chakras').map(i=>i.id)},
   {name:'The 5 kośas, outermost to innermost', ids:deckItems('koshas').map(i=>i.id)},
@@ -328,7 +415,7 @@ const SEQS = [
 ];
 
 const fromDeck = (d,prompt,goal) => ({prompt, goal, list:true,
-  ans: deckItems(d).map(i=>({label:i.t, keys:[i.t, ...(i.k||[])]}))});
+  ans: deckItems(d).filter(i=>i.dv).map(i=>({label:i.t, keys:[i.t, ...(i.k||[])]}))});
 const RECALL = [
   fromDeck('limbs','Name the 8 limbs of Patañjali’s Aṣṭāṅga Yoga'),
   fromDeck('yamas','Name the 5 yamas'),
@@ -339,6 +426,53 @@ const RECALL = [
   fromDeck('bandhas','Name the 3 bandhas'),
   fromDeck('chakras','Name the 7 main cakras'),
   fromDeck('poses','Name the 6 postures in Sanskrit (child’s, warrior, triangle, down dog, up dog, tree)'),
+  {prompt:'Name 3 variations / adaptations of child’s posture', goal:3, ans:[
+    {label:'Table top',keys:['table','tabletop']},
+    {label:'Bolster under the chest',keys:['bolster','chest']},
+    {label:'Blanket behind the knees',keys:['blanket','behind knee']},
+    {label:'Block under the hips',keys:['block','under hip']}]},
+  {prompt:'Name 3 alternatives to down dog', goal:3, ans:[
+    {label:'Forearms on the mat',keys:['forearm','dolphin']},
+    {label:'Knees down, longer table top',keys:['knees','kneel','table','longer']},
+    {label:'Child’s posture',keys:['child','balasana']}]},
+  {prompt:'Name 3 poses that prepare for crow', goal:3, ans:[
+    {label:'Low lunge',keys:['lunge']},
+    {label:'Down dog / plank transitions',keys:['plank','down dog','downdog','dog']},
+    {label:'Yogi squat / Mālāsana',keys:['squat','malasana','garland']}]},
+  {prompt:'Name 2 postures that complement triangle', goal:2, ans:[
+    {label:'Five-pointed star',keys:['star','five point','5 point']},
+    {label:'Half moon',keys:['half moon','moon','ardha']}]},
+  {prompt:'Name 2 postures that prepare for full splits', goal:2, ans:[
+    {label:'Pyramid',keys:['pyramid']},
+    {label:'Low lunge / half splits',keys:['lunge','half split']}]},
+  {prompt:'The 3 parts of a yoga class in thirds', ans:[
+    {label:'Warm up & build heat',keys:['warm','heat']},
+    {label:'Standing sequences & peak',keys:['standing','peak']},
+    {label:'Cool down, floor, savasana',keys:['cool','floor','savasana']}]},
+  {prompt:'Name the 6 parts of the arc of a class', ans:[
+    {label:'Arrival & centering',keys:['arrival','arriv','centering','center']},
+    {label:'Warm-up',keys:['warm']},
+    {label:'Build toward peak',keys:['build','toward']},
+    {label:'Peak pose',keys:['peak']},
+    {label:'Cool down',keys:['cool']},
+    {label:'Savasana',keys:['savasana','shavasana','corpse','rest']}]},
+  {prompt:'Name the 6 key principles of smart sequencing', ans:[
+    {label:'Simple → complex',keys:['simple','complex']},
+    {label:'Stable → dynamic',keys:['stable','dynamic']},
+    {label:'Large → small muscle groups',keys:['muscle','large','small']},
+    {label:'Symmetry & balance',keys:['symmetr','balance']},
+    {label:'Clear transitions',keys:['clear','transition']},
+    {label:'Nervous system awareness',keys:['nervous','stabilize','stimulate','soothe']}]},
+  {prompt:'Name the 5 common sequencing mistakes', ans:[
+    {label:'Peak pose too early',keys:['early','too soon']},
+    {label:'Insufficient preparation',keys:['prep','insufficient','not enough']},
+    {label:'Unnatural transitions in the joints',keys:['joint','natural']},
+    {label:'Overcomplicating transitions',keys:['complicat','complex']},
+    {label:'Forgetting counterpostures',keys:['counter']}]},
+  {prompt:'Name the 3 energetic styles of a class', ans:[
+    {label:'Grounding',keys:['ground']},
+    {label:'Energizing',keys:['energiz','energis']},
+    {label:'Cooling',keys:['cool']}]},
   {prompt:'Name at least 5 physical signs of distress in a student', goal:5, ans:[
     {label:'Excessive sweat',keys:['sweat']},
     {label:'Can’t control breath',keys:['breath','breathing','gasp','pant']},
@@ -420,7 +554,8 @@ function sayBtn(it, small){
 }
 
 /* ---------------- DECK CHIPS ---------------- */
-let chosen = store.get('decks', Object.keys(DECKS).filter(d=>d!=='qa'));
+let chosen = store.get('decks2', Object.keys(DECKS));
+const isQA = d => !!(DECKS[d] && DECKS[d].qa);
 const chipListeners = [];
 function renderChips(){
   document.querySelectorAll('[data-decks]').forEach(box=>{
@@ -431,15 +566,18 @@ function renderChips(){
       const c = el('button',{class:'chip','aria-pressed':chosen.includes(k)},d.name);
       c.onclick = () => {
         chosen = chosen.includes(k) ? chosen.filter(x=>x!==k) : [...chosen,k];
-        if(!chosen.filter(x=>x!=='qa').length && !allowQA){ chosen=[...chosen,k]; toast('Pick at least one topic'); }
+        if(!chosen.filter(x=>!isQA(x)).length && !allowQA){ chosen=[...chosen,k]; toast('Pick at least one topic'); }
         if(!chosen.length){ chosen=[k]; toast('Pick at least one topic'); }
-        store.set('decks',chosen); renderChips(); chipListeners.forEach(f=>f(box.closest('section').id));
+        store.set('decks2',chosen); renderChips(); chipListeners.forEach(f=>f(box.closest('section').id));
       };
       box.appendChild(c);
     });
   });
 }
-const pool = includeQA => ITEMS.filter(i=>chosen.includes(i.d) && (includeQA || i.d!=='qa'));
+const pool = includeQA => {
+  const p = ITEMS.filter(i=>chosen.includes(i.d) && (includeQA || !isQA(i.d)));
+  return p.length ? p : ITEMS.filter(i=>includeQA || !isQA(i.d));
+};
 
 /* ---------------- FLASHCARDS ---------------- */
 const fc = {queue:[], cur:null, flipped:false, enFirst:store.get('enFirst',false), total:0, done:0};
@@ -462,21 +600,21 @@ function fcRender(){
     const again = el('button',{class:'btn primary'},'Go again'); again.onclick = fcStart;
     box.appendChild(again); area.appendChild(box); return;
   }
-  const it = fc.cur, isQA = it.d==='qa';
+  const it = fc.cur, qaCard = isQA(it.d);
   const card = el('div',{class:'panel fc',role:'button',tabindex:'0','aria-label':'Flip card'});
   card.appendChild(el('span',{class:'label'},DECKS[it.d].name));
-  const front = isQA ? 'q' : (fc.enFirst ? 'en' : 'sk');
+  const front = qaCard ? 'q' : (fc.enFirst ? 'en' : 'sk');
   const side = fc.flipped ? (front==='sk'?'en':front==='en'?'sk':'a') : front;
   if(side==='q'){
     card.appendChild(el('div',{class:'q'},esc(it.t)));
   } else if(side==='a'){
-    const body = Array.isArray(it.m) ? '<ul>'+it.m.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>' : esc(it.m);
+    const body = Array.isArray(it.m) ? '<ul>'+it.m.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>' : esc(it.m).replace(/&lt;tip&gt;(.*?)&lt;\/tip&gt;/g,'<span class="tip">$1</span>');
     card.appendChild(el('div',{class:'qa-text'},body));
   } else if(side==='sk'){
     card.appendChild(el('div',{class:'term'},esc(it.t)));
     if(it.dv) card.appendChild(el('div',{class:'deva',lang:'sa'},it.dv));
-    const r = el('div',{class:'row',style:'justify-content:center'}); r.appendChild(el('span',{class:'phon'},esc(it.s))); r.appendChild(sayBtn(it,true));
-    card.appendChild(r);
+    if(it.s){ const r = el('div',{class:'row',style:'justify-content:center'}); r.appendChild(el('span',{class:'phon'},esc(it.s))); r.appendChild(sayBtn(it,true));
+    card.appendChild(r); }
     if(fc.flipped) card.appendChild(el('div',{class:'ans small'},esc(cap(it.m))));
   } else {
     card.appendChild(el('div',{class:'ans'},esc(cap(it.m))));
@@ -534,8 +672,9 @@ function makeQuestion(){
   const it = pick(items);
   const deck = DECKS[it.d];
   const same = deckItems(it.d);
-  const others = ITEMS.filter(i=>i.d!=='qa');
-  const kinds = ['t2m','m2t','t2m','m2t','cat'];
+  const others = ITEMS.filter(i=>!isQA(i.d) && i.d!=='hips' && i.d!=='arc');
+  const kinds = deck.only ? deck.only.slice() : ['t2m','m2t','t2m','m2t','cat'];
+  if(it.d==='arc' && kinds.includes('cat')) kinds.splice(kinds.indexOf('cat'),1);
   if(it.x) Object.keys(it.x).forEach(k=>kinds.push('x:'+k,'x:'+k));
   if(it.quals) kinds.push('qual','qual','qual');
   const kind = pick(kinds);
@@ -548,7 +687,7 @@ function makeQuestion(){
       return {it, prompt:XQ[k](esc(it.t)), answer:it.x[k], opts:options(it.x[k], same.map(i=>i.x[k]))}; }
   if(kind==='qual'){ const qs = shuffle(it.quals).slice(0,3);
       return {it, prompt:`Which doṣa is <b>${qs.map(esc).join(', ')}</b>?`, answer:it.t, opts:shuffle(same.map(i=>i.t))}; }
-  const names = Object.entries(DECKS).filter(([k,d])=>!d.qa && k!=='core' && k!=='poses').map(([,d])=>d.name);
+  const names = Object.entries(DECKS).filter(([k,d])=>!d.qa && !['core','poses','poses2','arc','hips'].includes(k)).map(([,d])=>d.name);
   return {it, prompt:`<b>${esc(it.t)}</b> belongs to which group?`, answer:deck.name, opts:options(deck.name, names)};
 }
 function quizStart(){ qz.n=0; qz.score=0; qz.streak=0; quizAsk(); }
@@ -586,7 +725,8 @@ function quizAsk(){
 /* ---------------- MATCH ---------------- */
 const mt = {sel:null, items:[], done:new Set(), miss:0};
 function matchStart(){
-  const cands = shuffle(pool(false).filter(i=>i.d!=='core'));
+  let cands = shuffle(pool(false).filter(i=>i.dv && i.d!=='core'));
+  if(cands.length<3) cands = shuffle(ITEMS.filter(i=>i.dv && i.d!=='core' && !isQA(i.d)));
   const picked = []; const seenM = new Set();
   for(const i of cands){ if(!seenM.has(i.m)){ seenM.add(i.m); picked.push(i); } if(picked.length===5) break; }
   mt.items = picked; mt.done = new Set(); mt.miss = 0; mt.sel = null;
@@ -739,7 +879,7 @@ function glossRender(){
   let any=false;
   Object.entries(DECKS).forEach(([k,d])=>{
     if(d.qa) return;
-    const items = deckItems(k).filter(i=>!q || norm(i.t+' '+i.m+' '+(i.k||[]).join(' ')).includes(q));
+    const items = deckItems(k).filter(i=>i.dv).filter(i=>!q || norm(i.t+' '+i.m+' '+(i.k||[]).join(' ')).includes(q));
     if(!items.length) return; any=true;
     area.appendChild(el('h3',{},d.name));
     items.forEach(it=>{
@@ -753,9 +893,35 @@ function glossRender(){
 }
 $('#g-q').oninput = glossRender;
 
+/* ---------------- GRADUATION ---------------- */
+const GRAD = [
+  ['exam','Pass the written exam','A simple test on the study guide — October weekend, in person, no notes, 70% to pass.'],
+  ['paper','Yama & Niyama paper','2+ pages, double-spaced, standard font. Discuss at least 2 yamas and 2 niyamas.'],
+  ['seq75','Written sequence for a 75-minute flow class','Any level. You can reuse a class you planned for your videos.'],
+  ['med','Guided meditation script','1–2 pages, double-spaced, standard font.'],
+  ['v1','Video: Vinyāsa flow class #1 (your design)','At least 60 minutes.'],
+  ['v2','Video: Vinyāsa flow class #2 (your design)','At least 60 minutes.'],
+  ['v3','Video: Vinyāsa flow class #3','At least 60 minutes. (The FAQ says one of your classes can be the class they provide.)'],
+  ['vp','Video: private session with a friend or family member','Typically 60–75 minutes.'],
+  ['va','Video: one class in any style','Another vinyāsa, or gentle, yin, etc. if you feel competent. 5 hours of video total.'],
+  ['send','Send it all in ONE email','To teachertraining@bellaprana.com with subject “Graduation Submission”.']
+];
+let gradDone = store.get('grad',{});
+function gradRender(){
+  const area = $('#grad-area'); area.innerHTML='';
+  GRAD.forEach(([id,title,desc])=>{
+    const row = el('label',{class:'ck'+(gradDone[id]?' on':'')});
+    const box = el('input',{type:'checkbox'}); box.checked = !!gradDone[id];
+    box.onchange = () => { gradDone[id]=box.checked; store.set('grad',gradDone); gradRender(); };
+    row.appendChild(box);
+    row.appendChild(el('div',{},`<b>${esc(title)}</b><span class="d">${esc(desc)}</span>`));
+    area.appendChild(row);
+  });
+}
+
 /* ---------------- TABS ---------------- */
 let current = 'cards';
-const starters = {cards:fcStart, quiz:quizStart, match:matchStart, order:orderStart, recall:recallStart, gloss:glossRender};
+const starters = {cards:fcStart, quiz:quizStart, match:matchStart, order:orderStart, recall:recallStart, gloss:glossRender, grad:gradRender};
 const started = {};
 function show(tab){
   if(!starters[tab]) tab='cards';
