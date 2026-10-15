@@ -31,6 +31,14 @@ header .exam{margin-top:10px;display:inline-block;background:var(--chip);color:v
 .ck b{display:block}
 .ck span.d{color:var(--muted);font-size:15px}
 .ck.on b{text-decoration:line-through;color:var(--muted)}
+.ep{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.ep .num{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ep h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:20px;margin:2px 0 4px}
+.ep p{margin:0 0 12px;color:var(--muted);font-size:15px}
+.ep audio{width:100%;display:block}
+.ep .speeds{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.ep .done{color:var(--ok);font-size:13px;font-weight:700}
+.empty{text-align:center;padding:36px 16px;color:var(--muted);border:1.5px dashed var(--line);border-radius:16px}
 .gfacts{margin:18px 0 0;padding-left:20px;font-size:15px}
 .gfacts li{margin:6px 0}
 .qa-text .tip{display:block;margin-top:10px;font-size:14px;color:var(--muted)}
@@ -149,6 +157,7 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
 </header>
 
 <nav id="nav">
+  <button data-tab="pods">Podcasts</button>
   <button data-tab="cards">Flashcards</button>
   <button data-tab="quiz">Quiz</button>
   <button data-tab="match">Match</button>
@@ -157,6 +166,12 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
   <button data-tab="gloss">Pronounce</button>
   <button data-tab="grad">Graduation</button>
 </nav>
+
+<section id="pods">
+  <h2>Podcasts</h2>
+  <p class="sub">Listen on a walk or in the car. Your spot in each episode is saved.</p>
+  <div id="pods-area"></div>
+</section>
 
 <section id="cards">
   <h2>Flashcards</h2>
@@ -893,6 +908,44 @@ function glossRender(){
 }
 $('#g-q').oninput = glossRender;
 
+/* ---------------- PODCASTS ---------------- */
+// To add an episode: put the audio file in the podcasts/ folder and add a line here.
+const PODCASTS = [
+  // {n:1, title:'Episode title', desc:'What it covers', file:'podcasts/ep01.mp3'},
+];
+let podPos = store.get('podPos',{});
+function podsRender(){
+  const area = $('#pods-area'); area.innerHTML='';
+  if(!PODCASTS.length){ area.appendChild(el('div',{class:'empty'},'Episode 1 is coming soon.')); return; }
+  PODCASTS.slice().sort((a,b)=>a.n-b.n).forEach(ep=>{
+    const card = el('div',{class:'ep'});
+    const st = podPos[ep.file] || {};
+    card.appendChild(el('div',{class:'num'},`Episode ${ep.n}${st.done?' · <span class="done">Finished</span>':''}`));
+    card.appendChild(el('h3',{},esc(ep.title)));
+    if(ep.desc) card.appendChild(el('p',{},esc(ep.desc)));
+    const au = el('audio',{controls:'',preload:'metadata',src:ep.file});
+    let restored = false;
+    au.addEventListener('loadedmetadata',()=>{ if(!restored && st.t && !st.done && st.t < au.duration-5){ au.currentTime = st.t; } restored = true; au.playbackRate = store.get('podRate',1); });
+    let last = 0;
+    au.addEventListener('timeupdate',()=>{ if(Math.abs(au.currentTime-last)>4){ last=au.currentTime; podPos[ep.file]={t:au.currentTime}; store.set('podPos',podPos);} });
+    au.addEventListener('ended',()=>{ podPos[ep.file]={t:0,done:true}; store.set('podPos',podPos); });
+    au.addEventListener('play',()=>{ document.querySelectorAll('#pods-area audio').forEach(a=>{ if(a!==au) a.pause(); }); try{ speechSynthesis.cancel(); }catch(e){} try{ if(clip) clip.pause(); }catch(e){} });
+    card.appendChild(au);
+    const sp = el('div',{class:'speeds'}); sp.appendChild(el('span',{class:'small'},'Speed'));
+    const back = el('button',{class:'chip'},'−15s'); back.onclick=()=>{ au.currentTime=Math.max(0,au.currentTime-15); };
+    const fwd = el('button',{class:'chip'},'+30s'); fwd.onclick=()=>{ au.currentTime=Math.min(au.duration||0,au.currentTime+30); };
+    [1,1.25,1.5,2].forEach(r=>{
+      const b = el('button',{class:'chip','aria-pressed':String(store.get('podRate',1)===r)},r+'×');
+      b.onclick=()=>{ store.set('podRate',r); document.querySelectorAll('#pods-area audio').forEach(a=>a.playbackRate=r);
+        document.querySelectorAll('#pods-area .speeds .chip[data-r]').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.r===r))); };
+      b.dataset.r=r; sp.appendChild(b);
+    });
+    sp.appendChild(el('span',{class:'spacer'})); sp.append(back,fwd);
+    card.appendChild(sp);
+    area.appendChild(card);
+  });
+}
+
 /* ---------------- GRADUATION ---------------- */
 const GRAD = [
   ['exam','Pass the written exam','A simple test on the study guide — October weekend, in person, no notes, 70% to pass.'],
@@ -921,7 +974,7 @@ function gradRender(){
 
 /* ---------------- TABS ---------------- */
 let current = 'cards';
-const starters = {cards:fcStart, quiz:quizStart, match:matchStart, order:orderStart, recall:recallStart, gloss:glossRender, grad:gradRender};
+const starters = {cards:fcStart, quiz:quizStart, match:matchStart, order:orderStart, recall:recallStart, gloss:glossRender, grad:gradRender, pods:podsRender};
 const started = {};
 function show(tab){
   if(!starters[tab]) tab='cards';
