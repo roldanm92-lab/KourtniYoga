@@ -266,8 +266,6 @@ const DECKS = {
   poses:   {name:'Postures',       t2m:'What is <b>{t}</b> in English?',          m2t:'What is the Sanskrit name for {m}?'},
   core:    {name:'Core concepts',  t2m:'What is <b>{t}</b>?',                     m2t:'Which term means: {m}?'},
   poses2:  {name:'More postures',  t2m:'What is <b>{t}</b> in English?',          m2t:'What is the Sanskrit name for {m}?'},
-  arc:     {name:'Arc of a class', t2m:'What happens during <b>{t}</b>?',         m2t:'Which part of class is this: {m}?'},
-  hips:    {name:'Open vs. closed hip', only:['t2m'], t2m:'Is <b>{t}</b> an open-hip or closed-hip posture?'},
   qa:      {name:'Short answers',  qa:true},
   teach:   {name:'Teaching & poses', qa:true},
   seqqa:   {name:'Sequencing',     qa:true},
@@ -360,22 +358,6 @@ const ITEMS = [
   I('poses2','bakasana','Bakāsana','बकासन','buh-KAH-sah-nah','Crow posture'),
   I('poses2','ardhacandra','Ardha Candrāsana','अर्धचन्द्रासन','AR-dah chun-DRAH-sah-nah','Half moon'),
   I('poses2','savasana','Śavāsana','शवासन','shah-VAH-sah-nah','Corpse pose — final rest'),
-  // arc of a class (Intro to Sequencing)
-  I('arc','arrival','Arrival & centering','','','Breath awareness and grounding; gentle mobility; connect breath to movement early'),
-  I('arc','warmup','Warm-up','','','Gradual heat (Sun Salutations are ideal); mobilize major joints; introduce patterns that come back later'),
-  I('arc','build','Build toward peak','','','Progressive layering — climb a ladder of postures that prepare the muscles and joints the peak needs'),
-  I('arc','peak','Peak pose','','','Clear setup cued from the ground up; offer stages (“option to”); allow time to explore, like a workshop'),
-  I('arc','cooldown','Cool down','','','Counterposes to the peak; slow the nervous system; move to the floor (bridge, supine twists)'),
-  I('arc','savasana_arc','Savasana','','','Integration with breathwork, stillness, and closing'),
-  // open vs closed hip
-  I('hips','h1','Downward dog','','','Closed hip'),
-  I('hips','h2','Pyramid','','','Closed hip'),
-  I('hips','h3','Warrior I','','','Closed hip'),
-  I('hips','h4','Warrior III','','','Closed hip'),
-  I('hips','h5','Warrior II','','','Open hip'),
-  I('hips','h6','Reverse Warrior','','','Open hip'),
-  I('hips','h7','Triangle','','','Open hip'),
-  I('hips','h8','Half moon','','','Open hip'),
   // teaching & poses (flashcards)
   I('teach','t1','Three variations / adaptations of child’s posture','','',['Table top','Bolster under the chest','Blanket behind the knees','Block under the hips']),
   I('teach','t2','Three alternatives to down dog with the same purpose / benefits','','',['Forearms on the mat instead of palms','Knees down in a “longer” table top','Child’s posture']),
@@ -421,7 +403,6 @@ const BY_ID = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 const deckItems = d => ITEMS.filter(i=>i.d===d);
 
 const SEQS = [
-  {name:'The arc of a class, start to finish', ids:deckItems('arc').map(i=>i.id)},
   {name:'The 8 limbs, in order',          ids:deckItems('limbs').map(i=>i.id)},
   {name:'The 7 cakras, root to crown',    ids:deckItems('chakras').map(i=>i.id)},
   {name:'The 5 kośas, outermost to innermost', ids:deckItems('koshas').map(i=>i.id)},
@@ -464,13 +445,6 @@ const RECALL = [
     {label:'Warm up & build heat',keys:['warm','heat']},
     {label:'Standing sequences & peak',keys:['standing','peak']},
     {label:'Cool down, floor, savasana',keys:['cool','floor','savasana']}]},
-  {prompt:'Name the 6 parts of the arc of a class', ans:[
-    {label:'Arrival & centering',keys:['arrival','arriv','centering','center']},
-    {label:'Warm-up',keys:['warm']},
-    {label:'Build toward peak',keys:['build','toward']},
-    {label:'Peak pose',keys:['peak']},
-    {label:'Cool down',keys:['cool']},
-    {label:'Savasana',keys:['savasana','shavasana','corpse','rest']}]},
   {prompt:'Name the 6 key principles of smart sequencing', ans:[
     {label:'Simple → complex',keys:['simple','complex']},
     {label:'Stable → dynamic',keys:['stable','dynamic']},
@@ -687,9 +661,8 @@ function makeQuestion(){
   const it = pick(items);
   const deck = DECKS[it.d];
   const same = deckItems(it.d);
-  const others = ITEMS.filter(i=>!isQA(i.d) && i.d!=='hips' && i.d!=='arc');
-  const kinds = deck.only ? deck.only.slice() : ['t2m','m2t','t2m','m2t','cat'];
-  if(it.d==='arc' && kinds.includes('cat')) kinds.splice(kinds.indexOf('cat'),1);
+  const others = ITEMS.filter(i=>!isQA(i.d));
+  const kinds = ['t2m','m2t'];
   if(it.x) Object.keys(it.x).forEach(k=>kinds.push('x:'+k,'x:'+k));
   if(it.quals) kinds.push('qual','qual','qual');
   const kind = pick(kinds);
@@ -702,8 +675,7 @@ function makeQuestion(){
       return {it, prompt:XQ[k](esc(it.t)), answer:it.x[k], opts:options(it.x[k], same.map(i=>i.x[k]))}; }
   if(kind==='qual'){ const qs = shuffle(it.quals).slice(0,3);
       return {it, prompt:`Which doṣa is <b>${qs.map(esc).join(', ')}</b>?`, answer:it.t, opts:shuffle(same.map(i=>i.t))}; }
-  const names = Object.entries(DECKS).filter(([k,d])=>!d.qa && !['core','poses','poses2','arc','hips'].includes(k)).map(([,d])=>d.name);
-  return {it, prompt:`<b>${esc(it.t)}</b> belongs to which group?`, answer:deck.name, opts:options(deck.name, names)};
+  return {it, prompt:fill(deck.t2m,it), answer:cap(it.m), opts:options(cap(it.m), fillPool(same.map(i=>cap(i.m)), others.map(i=>cap(i.m))))};
 }
 function quizStart(){ qz.n=0; qz.score=0; qz.streak=0; quizAsk(); }
 function quizAsk(){
