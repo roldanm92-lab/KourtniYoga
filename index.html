@@ -11,12 +11,12 @@
 :root{
   --bg:#f5efe4; --card:#fffdf8; --ink:#2a2420; --muted:#7a6f66; --line:#e3d9ca;
   --accent:#b4532f; --accent-ink:#fff; --ok:#4f7a4c; --ok-bg:#e5efe1; --bad:#a8392e; --bad-bg:#f6e1dc;
-  --chip:#ece3d5; --shadow:0 1px 2px rgba(60,40,20,.06),0 6px 20px rgba(60,40,20,.06);
+  --chip:#ece3d5; --hl:#f1b28f; --shadow:0 1px 2px rgba(60,40,20,.06),0 6px 20px rgba(60,40,20,.06);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#1c1916; --card:#262220; --ink:#efe7dc; --muted:#a99d90; --line:#3a342f;
   --accent:#e0815a; --accent-ink:#1c1916; --ok:#9cc596; --ok-bg:#25331f; --bad:#ec8f83; --bad-bg:#3a221e;
-  --chip:#332e29; --shadow:none;
+  --chip:#332e29; --hl:#a8573a; --shadow:none;
 }}
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -39,6 +39,25 @@ header .exam{margin-top:10px;display:inline-block;background:var(--chip);color:v
 .ep .speeds{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
 .ep .done{color:var(--ok);font-size:13px;font-weight:700}
 .empty{text-align:center;padding:36px 16px;color:var(--muted);border:1.5px dashed var(--line);border-radius:16px}
+.bwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:14px;align-items:start}
+.sk{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px}
+.sk svg{width:100%;height:auto;display:block;max-height:80vh}
+.sk .o{stroke:var(--ink);fill:none}
+.sk .i{stroke:var(--card);fill:none;transition:stroke .2s}
+.sk .f{fill:var(--card);stroke:var(--ink);stroke-width:1.4;transition:fill .2s}
+.sk .hole{fill:var(--line);stroke:var(--ink);stroke-width:1}
+.sk .rib{fill:none;stroke:var(--muted);stroke-width:1.5;pointer-events:none}
+.sk .hit{fill:transparent;stroke:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sk g.hl .i{stroke:var(--hl)} .sk g.hl .f{fill:var(--hl)}
+.sk g.good .i{stroke:var(--ok)} .sk g.good .f{fill:var(--ok)}
+.sk g.bad .i{stroke:var(--bad)} .sk g.bad .f{fill:var(--bad)}
+.bpanel{position:sticky;top:10px}
+.bpanel .bq{font-size:15px;color:var(--muted);margin:0 0 4px}
+.bpanel .bt{font-family:Fraunces,Georgia,serif;font-size:26px;line-height:1.15;margin:0 0 6px}
+.bpanel .bd{font-size:15px;margin:0 0 12px}
+.bpanel .opts{gap:8px}
+.bpanel .opt{padding:11px 12px}
+.bpanel .bstat{font-size:13px;color:var(--muted);margin:12px 0 0}
 .gfacts{margin:18px 0 0;padding-left:20px;font-size:15px}
 .gfacts li{margin:6px 0}
 .qa-text .tip{display:block;margin-top:10px;font-size:14px;color:var(--muted)}
@@ -161,6 +180,7 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
   <button data-tab="cards">Flashcards</button>
   <button data-tab="quiz">Quiz</button>
   <button data-tab="match">Match</button>
+  <button data-tab="bones">Bones</button>
   <button data-tab="order">Order</button>
   <button data-tab="recall">Recall</button>
   <button data-tab="gloss">Pronounce</button>
@@ -199,6 +219,16 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
   <p class="mhelp" id="m-help"></p>
   <div id="match-area"></div>
   <div class="row" style="margin-top:14px"><button class="btn" id="m-new">New set of words</button></div>
+</section>
+
+<section id="bones">
+  <h2>Bones</h2>
+  <p class="sub">The 19 bones from your skeletal system worksheet.</p>
+  <div class="chips" id="b-modes"></div>
+  <div class="bwrap">
+    <div class="sk" id="b-svg"></div>
+    <div class="bpanel" id="b-panel"></div>
+  </div>
 </section>
 
 <section id="order">
@@ -265,6 +295,7 @@ const DECKS = {
   doshas:  {name:'Doṣas',          t2m:'Which elements make up <b>{t}</b>?',      m2t:'Which doṣa is made of {m}?'},
   poses:   {name:'Postures',       t2m:'What is <b>{t}</b> in English?',          m2t:'What is the Sanskrit name for {m}?'},
   core:    {name:'Core concepts',  t2m:'What is <b>{t}</b>?',                     m2t:'Which term means: {m}?'},
+  bones:   {name:'Bones',          t2m:'What is the <b>{t}</b>?',                 m2t:'Which bone is the {m}?'},
   poses2:  {name:'More postures',  t2m:'What is <b>{t}</b> in English?',          m2t:'What is the Sanskrit name for {m}?'},
   qa:      {name:'Short answers',  qa:true},
   teach:   {name:'Teaching & poses', qa:true},
@@ -353,6 +384,26 @@ const ITEMS = [
   I('core','krsna','Kṛṣṇa','कृष्ण','KRISH-nah','The god who teaches Arjuna in the Bhagavad Gītā'),
   I('core','arjuna','Arjuna','अर्जुन','AR-joo-nah','The warrior who is advised by Krishna in the Bhagavad Gītā'),
   I('core','vairagya','Vairāgya','वैराग्य','vai-RAHG-yah','Non-attachment — letting go of clinging to outcomes'),
+  // bones (skeletal system worksheet)
+  I('bones','cranium','Cranium','','','Skull — protects the brain'),
+  I('bones','mandible','Mandible','','','Jaw bone — the only skull bone that moves'),
+  I('bones','clavicle','Clavicle','','','Collarbone'),
+  I('bones','scapula','Scapula','','','Shoulder blade'),
+  I('bones','sternum','Sternum','','','Breastbone — center of the chest'),
+  I('bones','humerus','Humerus','','','Upper arm bone'),
+  I('bones','radius','Radius','','','Forearm bone on the thumb side'),
+  I('bones','ulna','Ulna','','','Forearm bone on the pinky side'),
+  I('bones','carpus','Carpus','','','Wrist bones (carpals)'),
+  I('bones','metacarpus','Metacarpus','','','Hand / palm bones (metacarpals)'),
+  I('bones','phalanges','Phalanges','','','Finger and toe bones'),
+  I('bones','spine','Spine','','','Vertebral column — the backbone'),
+  I('bones','pelvis','Pelvis','','','Hip bones'),
+  I('bones','femur','Femur','','','Thigh bone — the longest bone in the body'),
+  I('bones','patella','Patella','','','Kneecap'),
+  I('bones','tibia','Tibia','','','Shin bone — the larger lower-leg bone, inner side'),
+  I('bones','fibula','Fibula','','','Thin lower-leg bone on the outer side'),
+  I('bones','tarsus','Tarsus','','','Ankle bones (tarsals)'),
+  I('bones','metatarsus','Metatarsus','','','Foot bones (metatarsals)'),
   // more postures
   I('poses2','malasana','Mālāsana','मालासन','mah-LAH-sah-nah','Yogi squat / garland — a hip opener'),
   I('poses2','bakasana','Bakāsana','बकासन','buh-KAH-sah-nah','Crow posture'),
@@ -422,6 +473,7 @@ const RECALL = [
   fromDeck('bandhas','Name the 3 bandhas'),
   fromDeck('chakras','Name the 7 main cakras'),
   fromDeck('poses','Name the 6 postures in Sanskrit (child’s, warrior, triangle, down dog, up dog, tree)'),
+  {prompt:'Name all 19 bones on the skeleton worksheet', list:true, ans:deckItems('bones').map(i=>({label:i.t, keys:[i.t, ...({spine:['vertebra','backbone'],cranium:['skull'],patella:['kneecap'],clavicle:['collarbone'],scapula:['shoulder blade'],carpus:['carpal'],tarsus:['tarsal'],metacarpus:['metacarpal'],metatarsus:['metatarsal'],sternum:['breastbone'],mandible:['jaw']}[i.id]||[])]}))},
   {prompt:'Name 3 variations / adaptations of child’s posture', goal:3, ans:[
     {label:'Table top',keys:['table','tabletop']},
     {label:'Bolster under the chest',keys:['bolster','chest']},
@@ -770,6 +822,139 @@ function matchTap(side, it, b){
 }
 $('#m-new').onclick = matchStart;
 
+/* ---------------- BONES ---------------- */
+const BONE_IDS = ['cranium','mandible','clavicle','scapula','sternum','humerus','radius','ulna','carpus','metacarpus','phalanges','spine','pelvis','femur','patella','tibia','fibula','tarsus','metatarsus'];
+function skeletonSVG(){
+  const L=(x1,y1,x2,y2,w)=>`<line class="o" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${w+3}" stroke-linecap="round"/><line class="i" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const C=(x,y,r)=>`<circle class="f" cx="${x}" cy="${y}" r="${r}"/>`;
+  const E=(x,y,rx,ry)=>`<ellipse class="f" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"/>`;
+  const P=d=>`<path class="f" d="${d}"/>`;
+  const HL=(x1,y1,x2,y2,w)=>`<line class="hit" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const HC=(x,y,r)=>`<circle class="hit" cx="${x}" cy="${y}" r="${r}"/>`;
+  const HR=(x,y,w,h)=>`<rect class="hit" x="${x}" y="${y}" width="${w}" height="${h}"/>`;
+  const HP=(d,w)=>`<path class="hit" d="${d}" stroke-width="${w||6}"/>`;
+  const MIR='transform="translate(300,0) scale(-1,1)"';
+  const pair=x=>`${x}<g ${MIR}>${x}</g>`;
+  const pelvisD='M150 330 C124 312 104 318 106 344 C108 362 122 374 138 384 L150 376 L162 384 C178 374 192 362 194 344 C196 318 176 312 150 330 Z';
+  const jawD='M126 70 Q127 96 150 104 Q173 96 174 70 Q166 84 150 86 Q134 84 126 70 Z';
+  const sternD='M144 128 L156 128 L157 196 L150 212 L143 196 Z';
+  const scapD='M103 128 L131 135 L121 196 Z';
+  let spine=''; for(let y=92;y<=334;y+=10) spine+=`<rect class="f" x="144" y="${y}" width="12" height="7" rx="2"/>`;
+  let ribs=''; for(let i=0;i<8;i++){ const y=136+i*11, x=112+(i>4?(i-4)*3:0); ribs+=`<path class="rib" d="M147 ${y} Q${x} ${y-3} ${x} ${y+14}"/><path class="rib" d="M153 ${y} Q${300-x} ${y-3} ${300-x} ${y+14}"/>`; }
+  const vis = {
+    scapula: pair(P(scapD)),
+    spine,
+    pelvis: P(pelvisD)+E(134,368,7,5).replace('class="f"','class="hole"')+E(166,368,7,5).replace('class="f"','class="hole"'),
+    femur: pair(L(126,364,132,380,8)+L(132,378,128,498,12)+C(125,362,7)),
+    tibia: pair(L(130,520,128,608,10)),
+    fibula: pair(L(116,522,116,604,5)),
+    patella: pair(E(128,506,8,9)),
+    humerus: pair(L(106,132,94,246,10)+C(106,132,8)),
+    radius: pair(L(88,256,74,356,5)),
+    ulna: pair(L(100,254,88,358,5)),
+    carpus: pair([[74,365],[81,364],[88,365],[75,372],[82,372],[89,372]].map(([x,y])=>C(x,y,3.4)).join('')),
+    metacarpus: pair(L(73,377,63,394,3)+L(78,379,72,404,3)+L(83,380,81,406,3)+L(88,380,89,404,3)+L(92,378,97,400,3)),
+    phalanges: pair(L(62,397,56,412,3)+L(72,407,68,430,2.6)+L(81,409,80,434,2.6)+L(89,407,91,430,2.6)+L(97,403,102,422,2.4)
+      +L(108,654,105,665,2.4)+L(117,657,116,669,2.4)+L(126,658,126,671,2.4)+L(134,657,136,669,2.4)+L(142,654,146,667,3.4)),
+    tarsus: pair([[118,616],[126,615],[133,617],[121,624],[129,624],[136,624]].map(([x,y])=>C(x,y,3.6)).join('')),
+    metatarsus: pair(L(115,629,108,650,3)+L(121,630,117,653,3)+L(127,630,126,654,3)+L(132,630,134,653,3)+L(138,629,142,650,3.4)),
+    sternum: P(sternD),
+    clavicle: pair(L(146,126,104,122,5)),
+    cranium: E(150,46,31,37)+E(139,50,6.5,7).replace('class="f"','class="hole"')+E(161,50,6.5,7).replace('class="f"','class="hole"')+'<path class="hole" d="M150 58 L146 68 L154 68 Z"/>',
+    mandible: P(jawD)
+  };
+  const drawOrder=['scapula','spine','pelvis','femur','tibia','fibula','patella','humerus','radius','ulna','carpus','metacarpus','phalanges','tarsus','metatarsus'];
+  const hits = {
+    pelvis: HP(pelvisD,8), spine: HL(150,94,150,334,18), scapula: pair(HP(scapD,10)),
+    humerus: pair(HL(106,132,94,246,20)), femur: pair(HL(128,364,129,498,22)), tibia: pair(HL(130,520,128,608,13)), fibula: pair(HL(115,522,115,604,11)),
+    radius: pair(HL(86,258,72,354,11)), ulna: pair(HL(101,256,89,356,11)),
+    cranium: `<ellipse class="hit" cx="150" cy="46" rx="33" ry="39"/>`, sternum: HP(sternD,10), clavicle: pair(HL(146,126,104,122,13)),
+    mandible: HP(jawD,6), patella: pair(HC(128,506,11)), carpus: pair(HC(82,368,11)), tarsus: pair(HC(127,620,11)),
+    metacarpus: pair(HR(58,376,44,28)), phalanges: pair(HR(50,406,58,32)+HR(100,653,52,22)), metatarsus: pair(HR(102,628,46,24))
+  };
+  const hitOrder=['pelvis','spine','scapula','humerus','femur','tibia','fibula','radius','ulna','sternum','clavicle','cranium','mandible','patella','carpus','tarsus','metacarpus','phalanges','metatarsus'];
+  return `<svg viewBox="44 2 212 676" role="img" aria-label="Skeleton diagram">
+    ${drawOrder.map(b=>`<g data-b="${b}">${vis[b]}</g>`).join('')}
+    <g>${ribs}</g>
+    ${['sternum','clavicle','cranium','mandible'].map(b=>`<g data-b="${b}">${vis[b]}</g>`).join('')}
+    <g>${hitOrder.map(b=>`<g data-h="${b}">${hits[b]}</g>`).join('')}</g>
+  </svg>`;
+}
+const bz = {mode:store.get('bmode','name'), queue:[], cur:null, done:0, miss:0, missed:new Set(), locked:false, wrongTaps:0};
+const BMODES = [['name','Name it'],['find','Find it'],['study','Study']];
+function bonesInit(){
+  $('#b-svg').innerHTML = skeletonSVG();
+  $('#b-svg svg').addEventListener('click', e=>{ const h=e.target.closest('[data-h]'); if(h) boneTap(h.dataset.h); });
+  bonesModes(); bonesStart();
+}
+function bonesModes(){
+  const box=$('#b-modes'); box.innerHTML='';
+  BMODES.forEach(([k,n])=>{ const c=el('button',{class:'chip','aria-pressed':String(bz.mode===k)},n);
+    c.onclick=()=>{ bz.mode=k; store.set('bmode',k); bonesModes(); bonesStart(); }; box.appendChild(c); });
+}
+function boneMark(id,cls){ document.querySelectorAll('#b-svg g[data-b]').forEach(g=>{ g.classList.remove(cls); if(id && g.dataset.b===id) g.classList.add(cls); }); }
+function boneClear(){ ['hl','good','bad'].forEach(c=>boneMark(null,c)); }
+function bonesStart(){
+  bz.queue=shuffle(BONE_IDS); bz.done=0; bz.miss=0; bz.missed=new Set(); bz.cur=null; boneNext();
+}
+function boneNext(){
+  boneClear(); bz.locked=false; bz.wrongTaps=0;
+  bz.cur = bz.mode==='study' ? null : (bz.queue.shift()||null);
+  boneRender();
+}
+function boneStat(){ return `<p class="bstat">${bz.done} of ${BONE_IDS.length} · ${bz.miss} miss${bz.miss===1?'':'es'}</p>`; }
+function boneRender(){
+  const p=$('#b-panel'); p.innerHTML='';
+  if(bz.mode==='study'){
+    p.innerHTML = `<p class="bq">Tap any bone to see its name.</p><p class="bt" id="b-name">—</p><p class="bd" id="b-desc"></p>`;
+    return;
+  }
+  if(!bz.cur){
+    p.innerHTML = `<p class="bq">Done!</p><p class="bt">${BONE_IDS.length-bz.missed.size} / ${BONE_IDS.length}</p><p class="bd">right on the first try.${bz.missed.size?' Missed: '+[...bz.missed].map(id=>BY_ID[id].t).join(', ')+'.':''}</p>`;
+    const b=el('button',{class:'btn primary'},'Go again'); b.onclick=bonesStart; p.appendChild(b); return;
+  }
+  const it=BY_ID[bz.cur];
+  if(bz.mode==='name'){
+    boneMark(bz.cur,'hl');
+    p.appendChild(el('p',{class:'bq'},'What is the highlighted bone?'));
+    const opts=el('div',{class:'opts'});
+    const choices=shuffle([bz.cur,...shuffle(BONE_IDS.filter(x=>x!==bz.cur)).slice(0,3)]);
+    choices.forEach(id=>{
+      const b=el('button',{class:'opt'},esc(BY_ID[id].t));
+      b.onclick=()=>{
+        if(bz.locked) return; bz.locked=true;
+        opts.querySelectorAll('.opt').forEach(x=>{ x.disabled=true; if(x.textContent===it.t) x.classList.add('right'); });
+        boneMark(null,'hl');
+        if(id===bz.cur){ boneMark(bz.cur,'good'); bz.done++; setTimeout(boneNext,750); }
+        else { b.classList.add('wrong'); boneMark(bz.cur,'bad'); bz.miss++; bz.missed.add(bz.cur); bz.queue.splice(Math.min(3,bz.queue.length),0,bz.cur);
+          p.appendChild(el('p',{class:'bd',style:'margin-top:12px'},`<b>${esc(it.t)}</b> — ${esc(it.m)}`));
+          const nx=el('button',{class:'btn primary',style:'margin-top:4px'},'Next'); nx.onclick=boneNext; p.appendChild(nx); }
+      };
+      opts.appendChild(b);
+    });
+    p.appendChild(opts);
+  } else {
+    p.appendChild(el('p',{class:'bq'},'Tap the'));
+    p.appendChild(el('p',{class:'bt'},esc(it.t)));
+    p.appendChild(el('p',{class:'bd',id:'b-fb'},''));
+  }
+  p.insertAdjacentHTML('beforeend',boneStat());
+}
+function boneTap(id){
+  const it=BY_ID[id];
+  if(bz.mode==='study'){ boneClear(); boneMark(id,'hl'); $('#b-name').textContent=it.t; $('#b-desc').textContent=it.m; return; }
+  if(bz.mode!=='find' || !bz.cur || bz.locked) return;
+  if(id===bz.cur){ bz.locked=true; boneClear(); boneMark(id,'good');
+    if(bz.wrongTaps===0) bz.done++;
+    $('#b-fb').innerHTML=`<span style="color:var(--ok);font-weight:700">Yes!</span> ${esc(it.m)}`; setTimeout(boneNext,900); }
+  else {
+    bz.wrongTaps++; if(bz.wrongTaps===1){ bz.miss++; bz.missed.add(bz.cur); bz.queue.splice(Math.min(3,bz.queue.length),0,bz.cur); }
+    boneMark(null,'bad'); boneMark(id,'bad'); setTimeout(()=>boneMark(null,'bad'),700);
+    $('#b-fb').innerHTML = `That’s the <b>${esc(it.t)}</b>.` + (bz.wrongTaps>=2 ? ' The right one is highlighted.' : ' Try again.');
+    if(bz.wrongTaps>=2) boneMark(bz.cur,'hl');
+  }
+}
+
 /* ---------------- ORDER ---------------- */
 const od = {seq:0, placed:[], checked:false};
 SEQS.forEach((s,i)=>$('#o-seq').appendChild(el('option',{value:i},s.name)));
@@ -946,7 +1131,7 @@ function gradRender(){
 
 /* ---------------- TABS ---------------- */
 let current = 'cards';
-const starters = {cards:fcStart, quiz:quizStart, match:matchStart, order:orderStart, recall:recallStart, gloss:glossRender, grad:gradRender, pods:podsRender};
+const starters = {cards:fcStart, quiz:quizStart, match:matchStart, order:orderStart, bones:bonesInit, recall:recallStart, gloss:glossRender, grad:gradRender, pods:podsRender};
 const started = {};
 function show(tab){
   if(!starters[tab]) tab='cards';
