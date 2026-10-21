@@ -52,6 +52,15 @@ header .exam{margin-top:10px;display:inline-block;background:var(--chip);color:v
 .sk g.good .i{stroke:var(--ok)} .sk g.good .f{fill:var(--ok)}
 .sk g.bad .i{stroke:var(--bad)} .sk g.bad .f{fill:var(--bad)}
 .bpanel{position:sticky;top:10px}
+.bwrap.mus{grid-template-columns:1fr}
+.bwrap.mus .bpanel{position:static}
+.bwrap.mus .sk svg{max-height:54vh;margin:0 auto}
+@media(min-width:620px){.bwrap.mus{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}.bwrap.mus .bpanel{position:sticky}}
+.sk .m{fill:var(--chip);stroke:var(--ink);stroke-width:1.2;cursor:pointer;transition:fill .2s;-webkit-tap-highlight-color:transparent}
+.sk .sil{fill:var(--card)} .sk .silo{fill:none;stroke:var(--ink)}
+.sk .ab{stroke:var(--ink);stroke-width:.8;fill:none;pointer-events:none}
+.sk .lbl{font:600 11px "Atkinson Hyperlegible",sans-serif;fill:var(--muted);text-anchor:middle;letter-spacing:.08em}
+.sk g.hl .m{fill:var(--hl)} .sk g.good .m{fill:var(--ok)} .sk g.bad .m{fill:var(--bad)}
 .bpanel .bq{font-size:15px;color:var(--muted);margin:0 0 4px}
 .bpanel .bt{font-family:Fraunces,Georgia,serif;font-size:26px;line-height:1.15;margin:0 0 6px}
 .bpanel .bd{font-size:15px;margin:0 0 12px}
@@ -181,6 +190,7 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
   <button data-tab="quiz">Quiz</button>
   <button data-tab="match">Match</button>
   <button data-tab="bones">Bones</button>
+  <button data-tab="muscles">Muscles</button>
   <button data-tab="order">Order</button>
   <button data-tab="recall">Recall</button>
   <button data-tab="gloss">Pronounce</button>
@@ -224,10 +234,20 @@ kbd{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 4px}
 <section id="bones">
   <h2>Bones</h2>
   <p class="sub">The 19 bones from your skeletal system worksheet.</p>
-  <div class="chips" id="b-modes"></div>
+  <div class="chips" id="bones-modes"></div>
   <div class="bwrap">
-    <div class="sk" id="b-svg"></div>
-    <div class="bpanel" id="b-panel"></div>
+    <div class="sk" id="bones-svg"></div>
+    <div class="bpanel" id="bones-panel"></div>
+  </div>
+</section>
+
+<section id="muscles">
+  <h2>Muscles</h2>
+  <p class="sub">The 10 major muscle groups, front and back.</p>
+  <div class="chips" id="muscles-modes"></div>
+  <div class="bwrap mus">
+    <div class="sk" id="muscles-svg"></div>
+    <div class="bpanel" id="muscles-panel"></div>
   </div>
 </section>
 
@@ -296,6 +316,7 @@ const DECKS = {
   poses:   {name:'Postures',       t2m:'What is <b>{t}</b> in English?',          m2t:'What is the Sanskrit name for {m}?'},
   core:    {name:'Core concepts',  t2m:'What is <b>{t}</b>?',                     m2t:'Which term means: {m}?'},
   bones:   {name:'Bones',          t2m:'What is the <b>{t}</b>?',                 m2t:'Which bone is the {m}?'},
+  muscles: {name:'Muscles',        t2m:'Where are the <b>{t}</b>?',               m2t:'Which muscle group is the {m}?'},
   poses2:  {name:'More postures',  t2m:'What is <b>{t}</b> in English?',          m2t:'What is the Sanskrit name for {m}?'},
   qa:      {name:'Short answers',  qa:true},
   teach:   {name:'Teaching & poses', qa:true},
@@ -404,6 +425,17 @@ const ITEMS = [
   I('bones','fibula','Fibula','','','Thin lower-leg bone on the outer side'),
   I('bones','tarsus','Tarsus','','','Ankle bones (tarsals)'),
   I('bones','metatarsus','Metatarsus','','','Foot bones (metatarsals)'),
+  // major muscle groups
+  I('muscles','pectorals','Pectorals','','','Chest'),
+  I('muscles','biceps','Biceps','','','Front of the upper arm'),
+  I('muscles','triceps','Triceps','','','Back of the upper arm'),
+  I('muscles','deltoids','Deltoids','','','Shoulders'),
+  I('muscles','abdominals','Abdominals','','','Belly / core'),
+  I('muscles','lats','Latissimus dorsi','','','Back — the broad muscles along the sides of the back'),
+  I('muscles','gluteals','Gluteals','','','Buttocks / seat'),
+  I('muscles','quadriceps','Quadriceps','','','Front of the thigh'),
+  I('muscles','hamstrings','Hamstrings','','','Back of the thigh'),
+  I('muscles','calves','Calves','','','Back of the lower leg'),
   // more postures
   I('poses2','malasana','Mālāsana','मालासन','mah-LAH-sah-nah','Yogi squat / garland — a hip opener'),
   I('poses2','bakasana','Bakāsana','बकासन','buh-KAH-sah-nah','Crow posture'),
@@ -474,6 +506,7 @@ const RECALL = [
   fromDeck('chakras','Name the 7 main cakras'),
   fromDeck('poses','Name the 6 postures in Sanskrit (child’s, warrior, triangle, down dog, up dog, tree)'),
   {prompt:'Name all 19 bones on the skeleton worksheet', list:true, ans:deckItems('bones').map(i=>({label:i.t, keys:[i.t, ...({spine:['vertebra','backbone'],cranium:['skull'],patella:['kneecap'],clavicle:['collarbone'],scapula:['shoulder blade'],carpus:['carpal'],tarsus:['tarsal'],metacarpus:['metacarpal'],metatarsus:['metatarsal'],sternum:['breastbone'],mandible:['jaw']}[i.id]||[])]}))},
+  {prompt:'Name the 10 major muscle groups', list:true, ans:deckItems('muscles').map(i=>({label:i.t, keys:[i.t, ...({pectorals:['pecs','chest'],deltoids:['delts','shoulder'],abdominals:['abs','core'],lats:['lats','latissimus'],gluteals:['glutes','butt'],quadriceps:['quads'],hamstrings:['hammies'],calves:['calf']}[i.id]||[])]}))},
   {prompt:'Name 3 variations / adaptations of child’s posture', goal:3, ans:[
     {label:'Table top',keys:['table','tabletop']},
     {label:'Bolster under the chest',keys:['bolster','chest']},
@@ -822,8 +855,9 @@ function matchTap(side, it, b){
 }
 $('#m-new').onclick = matchStart;
 
-/* ---------------- BONES ---------------- */
+/* ---------------- BODY GAMES (Bones, Muscles) ---------------- */
 const BONE_IDS = ['cranium','mandible','clavicle','scapula','sternum','humerus','radius','ulna','carpus','metacarpus','phalanges','spine','pelvis','femur','patella','tibia','fibula','tarsus','metatarsus'];
+const MUSCLE_IDS = ['pectorals','biceps','triceps','deltoids','abdominals','lats','gluteals','quadriceps','hamstrings','calves'];
 function skeletonSVG(){
   const L=(x1,y1,x2,y2,w)=>`<line class="o" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${w+3}" stroke-linecap="round"/><line class="i" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${w}" stroke-linecap="round"/>`;
   const C=(x,y,r)=>`<circle class="f" cx="${x}" cy="${y}" r="${r}"/>`;
@@ -880,80 +914,106 @@ function skeletonSVG(){
     <g>${hitOrder.map(b=>`<g data-h="${b}">${hits[b]}</g>`).join('')}</g>
   </svg>`;
 }
-const bz = {mode:store.get('bmode','name'), queue:[], cur:null, done:0, miss:0, missed:new Set(), locked:false, wrongTaps:0};
+function musclesSVG(){
+  const MIR='transform="translate(400,0) scale(-1,1)"';
+  function body(cx){
+    const lines=[[cx-38,78,cx-46,160,17],[cx-46,160,cx-50,232,13],[cx-15,214,cx-17,332,27],[cx-17,334,cx-18,450,19]];
+    const mir=l=>[2*cx-l[0],l[1],2*cx-l[2],l[3],l[4]];
+    const all=[...lines,...lines.map(mir)];
+    const torso=`M${cx-36} 72 Q${cx} 62 ${cx+36} 72 L${cx+31} 150 Q${cx+26} 190 ${cx+30} 216 L${cx-30} 216 Q${cx-26} 190 ${cx-31} 150 Z`;
+    const ln=(l,c,w)=>`<line class="${c}" x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}" stroke-width="${w}" stroke-linecap="round"/>`;
+    const blobs=[[cx,38,16,18],[cx-51,244,7,10],[cx+51,244,7,10],[cx-20,461,11,6],[cx+20,461,11,6]];
+    return `<g style="pointer-events:none">
+      ${all.map(l=>ln(l,'silo',l[4]+3)).join('')}<path class="silo" stroke-width="3" d="${torso}"/>
+      ${blobs.map(b=>`<ellipse class="silo" stroke-width="3" cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}"/>`).join('')}
+      <rect class="silo" stroke-width="3" x="${cx-7}" y="52" width="14" height="18"/>
+      ${all.map(l=>ln(l,'silo',l[4]).replace('class="silo"','class="sil" style="stroke:var(--card)"')).join('')}
+      <path class="sil" d="${torso}"/><rect class="sil" x="${cx-7}" y="52" width="14" height="20"/>
+      ${blobs.map(b=>`<ellipse class="sil" cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}"/>`).join('')}
+    </g>`;
+  }
+  const E=(x,y,rx,ry,r)=>`<ellipse class="m" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"${r?` transform="rotate(${r} ${x} ${y})"`:''}/>`;
+  const pair=(cx,x)=>`${x}<g transform="translate(${2*cx},0) scale(-1,1)">${x}</g>`;
+  const g=(id,x)=>`<g data-b="${id}">${x}</g>`;
+  const front = body(100) +
+    g('deltoids',pair(100,E(63,84,11,14,20))) +
+    g('pectorals',pair(100,`<path class="m" d="M99 84 Q82 82 70 92 Q72 112 86 116 Q96 116 99 110 Z"/>`)) +
+    g('biceps',pair(100,E(56,128,7.5,21,8))) +
+    g('abdominals',`<rect class="m" x="87" y="118" width="26" height="74" rx="9"/><path class="ab" d="M100 120 V190 M88 140 H112 M88 160 H112 M88 178 H112"/>`) +
+    g('quadriceps',pair(100,E(85,270,13,44,2))) +
+    g('calves',pair(100,E(80,386,7,26,2)));
+  const back = body(300) +
+    g('deltoids',pair(300,E(263,84,11,14,20))) +
+    g('lats',pair(300,`<path class="m" d="M297 98 L272 104 Q268 140 284 170 Q292 182 297 186 Z"/>`)) +
+    g('triceps',pair(300,E(256,128,7.5,21,8))) +
+    g('gluteals',pair(300,E(287,230,14,17))) +
+    g('hamstrings',pair(300,E(284,292,11,36,2))) +
+    g('calves',pair(300,E(283,388,11,28,2)));
+  return `<svg viewBox="30 14 340 488" role="img" aria-label="Front and back body diagram">${front}${back}
+    <text class="lbl" x="100" y="496">FRONT</text><text class="lbl" x="300" y="496">BACK</text></svg>`;
+}
 const BMODES = [['name','Name it'],['find','Find it'],['study','Study']];
-function bonesInit(){
-  $('#b-svg').innerHTML = skeletonSVG();
-  $('#b-svg svg').addEventListener('click', e=>{ const h=e.target.closest('[data-h]'); if(h) boneTap(h.dataset.h); });
-  bonesModes(); bonesStart();
-}
-function bonesModes(){
-  const box=$('#b-modes'); box.innerHTML='';
-  BMODES.forEach(([k,n])=>{ const c=el('button',{class:'chip','aria-pressed':String(bz.mode===k)},n);
-    c.onclick=()=>{ bz.mode=k; store.set('bmode',k); bonesModes(); bonesStart(); }; box.appendChild(c); });
-}
-function boneMark(id,cls){ document.querySelectorAll('#b-svg g[data-b]').forEach(g=>{ g.classList.remove(cls); if(id && g.dataset.b===id) g.classList.add(cls); }); }
-function boneClear(){ ['hl','good','bad'].forEach(c=>boneMark(null,c)); }
-function bonesStart(){
-  bz.queue=shuffle(BONE_IDS); bz.done=0; bz.miss=0; bz.missed=new Set(); bz.cur=null; boneNext();
-}
-function boneNext(){
-  boneClear(); bz.locked=false; bz.wrongTaps=0;
-  bz.cur = bz.mode==='study' ? null : (bz.queue.shift()||null);
-  boneRender();
-}
-function boneStat(){ return `<p class="bstat">${bz.done} of ${BONE_IDS.length} · ${bz.miss} miss${bz.miss===1?'':'es'}</p>`; }
-function boneRender(){
-  const p=$('#b-panel'); p.innerHTML='';
-  if(bz.mode==='study'){
-    p.innerHTML = `<p class="bq">Tap any bone to see its name.</p><p class="bt" id="b-name">—</p><p class="bd" id="b-desc"></p>`;
-    return;
+function makeBodyGame(key, ids, svgFn, noun){
+  const st = {mode:store.get(key+'mode','name'), queue:[], cur:null, done:0, miss:0, missed:new Set(), locked:false, wrongTaps:0};
+  const $$ = sel => document.querySelector('#'+key+'-'+sel);
+  const mark=(id,cls)=>{ document.querySelectorAll('#'+key+'-svg g[data-b]').forEach(g=>{ g.classList.remove(cls); if(id && g.dataset.b===id) g.classList.add(cls); }); };
+  const clear=()=>['hl','good','bad'].forEach(c=>mark(null,c));
+  function modes(){ const box=$$('modes'); box.innerHTML='';
+    BMODES.forEach(([k,n])=>{ const c=el('button',{class:'chip','aria-pressed':String(st.mode===k)},n);
+      c.onclick=()=>{ st.mode=k; store.set(key+'mode',k); modes(); start(); }; box.appendChild(c); }); }
+  function start(){ st.queue=shuffle(ids); st.done=0; st.miss=0; st.missed=new Set(); next(); }
+  function next(){ clear(); st.locked=false; st.wrongTaps=0; st.cur = st.mode==='study' ? null : (st.queue.shift()||null); render(); }
+  const stat=()=>`<p class="bstat">${st.done} of ${ids.length} · ${st.miss} miss${st.miss===1?'':'es'}</p>`;
+  function requeue(){ if(!st.missed.has(st.cur)){ st.miss++; st.missed.add(st.cur); } st.queue.splice(Math.min(3,st.queue.length),0,st.cur); }
+  function render(){
+    const p=$$('panel'); p.innerHTML='';
+    if(st.mode==='study'){ p.innerHTML=`<p class="bq">Tap any ${noun} to see its name.</p><p class="bt" data-n>—</p><p class="bd" data-d></p>`; return; }
+    if(!st.cur){
+      p.innerHTML=`<p class="bq">Done!</p><p class="bt">${ids.length-st.missed.size} / ${ids.length}</p><p class="bd">right on the first try.${st.missed.size?' Missed: '+[...st.missed].map(id=>BY_ID[id].t).join(', ')+'.':''}</p>`;
+      const b=el('button',{class:'btn primary'},'Go again'); b.onclick=start; p.appendChild(b); return; }
+    const it=BY_ID[st.cur];
+    if(st.mode==='name'){
+      mark(st.cur,'hl');
+      p.appendChild(el('p',{class:'bq'},`What is the highlighted ${noun}?`));
+      const opts=el('div',{class:'opts'});
+      shuffle([st.cur,...shuffle(ids.filter(x=>x!==st.cur)).slice(0,3)]).forEach(id=>{
+        const b=el('button',{class:'opt'},esc(BY_ID[id].t));
+        b.onclick=()=>{ if(st.locked) return; st.locked=true;
+          opts.querySelectorAll('.opt').forEach(x=>{ x.disabled=true; if(x.textContent===it.t) x.classList.add('right'); });
+          mark(null,'hl');
+          if(id===st.cur){ mark(st.cur,'good'); st.done++; setTimeout(next,750); }
+          else { b.classList.add('wrong'); mark(st.cur,'bad'); requeue();
+            p.appendChild(el('p',{class:'bd',style:'margin-top:12px'},`<b>${esc(it.t)}</b> — ${esc(it.m)}`));
+            const nx=el('button',{class:'btn primary',style:'margin-top:4px'},'Next'); nx.onclick=next; p.appendChild(nx); } };
+        opts.appendChild(b); });
+      p.appendChild(opts);
+    } else {
+      p.appendChild(el('p',{class:'bq'},'Tap the'));
+      p.appendChild(el('p',{class:'bt'},esc(it.t)));
+      p.appendChild(el('p',{class:'bd','data-fb':''},''));
+    }
+    p.insertAdjacentHTML('beforeend',stat());
   }
-  if(!bz.cur){
-    p.innerHTML = `<p class="bq">Done!</p><p class="bt">${BONE_IDS.length-bz.missed.size} / ${BONE_IDS.length}</p><p class="bd">right on the first try.${bz.missed.size?' Missed: '+[...bz.missed].map(id=>BY_ID[id].t).join(', ')+'.':''}</p>`;
-    const b=el('button',{class:'btn primary'},'Go again'); b.onclick=bonesStart; p.appendChild(b); return;
+  function tap(id){
+    const it=BY_ID[id], p=$$('panel');
+    if(st.mode==='study'){ clear(); mark(id,'hl'); p.querySelector('[data-n]').textContent=it.t; p.querySelector('[data-d]').textContent=it.m; return; }
+    if(st.mode!=='find' || !st.cur || st.locked) return;
+    const fb=p.querySelector('[data-fb]');
+    if(id===st.cur){ st.locked=true; clear(); mark(id,'good'); if(st.wrongTaps===0) st.done++;
+      fb.innerHTML=`<span style="color:var(--ok);font-weight:700">Yes!</span> ${esc(it.m)}`; setTimeout(next,900); }
+    else { st.wrongTaps++; if(st.wrongTaps===1) requeue();
+      mark(null,'bad'); mark(id,'bad'); setTimeout(()=>mark(null,'bad'),700);
+      fb.innerHTML=`That’s the <b>${esc(it.t)}</b>.`+(st.wrongTaps>=2?' The right one is highlighted.':' Try again.');
+      if(st.wrongTaps>=2) mark(st.cur,'hl'); }
   }
-  const it=BY_ID[bz.cur];
-  if(bz.mode==='name'){
-    boneMark(bz.cur,'hl');
-    p.appendChild(el('p',{class:'bq'},'What is the highlighted bone?'));
-    const opts=el('div',{class:'opts'});
-    const choices=shuffle([bz.cur,...shuffle(BONE_IDS.filter(x=>x!==bz.cur)).slice(0,3)]);
-    choices.forEach(id=>{
-      const b=el('button',{class:'opt'},esc(BY_ID[id].t));
-      b.onclick=()=>{
-        if(bz.locked) return; bz.locked=true;
-        opts.querySelectorAll('.opt').forEach(x=>{ x.disabled=true; if(x.textContent===it.t) x.classList.add('right'); });
-        boneMark(null,'hl');
-        if(id===bz.cur){ boneMark(bz.cur,'good'); bz.done++; setTimeout(boneNext,750); }
-        else { b.classList.add('wrong'); boneMark(bz.cur,'bad'); bz.miss++; bz.missed.add(bz.cur); bz.queue.splice(Math.min(3,bz.queue.length),0,bz.cur);
-          p.appendChild(el('p',{class:'bd',style:'margin-top:12px'},`<b>${esc(it.t)}</b> — ${esc(it.m)}`));
-          const nx=el('button',{class:'btn primary',style:'margin-top:4px'},'Next'); nx.onclick=boneNext; p.appendChild(nx); }
-      };
-      opts.appendChild(b);
-    });
-    p.appendChild(opts);
-  } else {
-    p.appendChild(el('p',{class:'bq'},'Tap the'));
-    p.appendChild(el('p',{class:'bt'},esc(it.t)));
-    p.appendChild(el('p',{class:'bd',id:'b-fb'},''));
-  }
-  p.insertAdjacentHTML('beforeend',boneStat());
+  return function init(){
+    $$('svg').innerHTML = svgFn();
+    $$('svg').querySelector('svg').addEventListener('click', e=>{ const h=e.target.closest('[data-h]')||e.target.closest('[data-b]'); if(h) tap(h.dataset.h||h.dataset.b); });
+    modes(); start();
+  };
 }
-function boneTap(id){
-  const it=BY_ID[id];
-  if(bz.mode==='study'){ boneClear(); boneMark(id,'hl'); $('#b-name').textContent=it.t; $('#b-desc').textContent=it.m; return; }
-  if(bz.mode!=='find' || !bz.cur || bz.locked) return;
-  if(id===bz.cur){ bz.locked=true; boneClear(); boneMark(id,'good');
-    if(bz.wrongTaps===0) bz.done++;
-    $('#b-fb').innerHTML=`<span style="color:var(--ok);font-weight:700">Yes!</span> ${esc(it.m)}`; setTimeout(boneNext,900); }
-  else {
-    bz.wrongTaps++; if(bz.wrongTaps===1){ bz.miss++; bz.missed.add(bz.cur); bz.queue.splice(Math.min(3,bz.queue.length),0,bz.cur); }
-    boneMark(null,'bad'); boneMark(id,'bad'); setTimeout(()=>boneMark(null,'bad'),700);
-    $('#b-fb').innerHTML = `That’s the <b>${esc(it.t)}</b>.` + (bz.wrongTaps>=2 ? ' The right one is highlighted.' : ' Try again.');
-    if(bz.wrongTaps>=2) boneMark(bz.cur,'hl');
-  }
-}
+const bonesInit = makeBodyGame('bones', BONE_IDS, skeletonSVG, 'bone');
+const musclesInit = makeBodyGame('muscles', MUSCLE_IDS, musclesSVG, 'muscle');
 
 /* ---------------- ORDER ---------------- */
 const od = {seq:0, placed:[], checked:false};
@@ -1131,7 +1191,7 @@ function gradRender(){
 
 /* ---------------- TABS ---------------- */
 let current = 'cards';
-const starters = {cards:fcStart, quiz:quizStart, match:matchStart, order:orderStart, bones:bonesInit, recall:recallStart, gloss:glossRender, grad:gradRender, pods:podsRender};
+const starters = {cards:fcStart, quiz:quizStart, match:matchStart, order:orderStart, bones:bonesInit, muscles:musclesInit, recall:recallStart, gloss:glossRender, grad:gradRender, pods:podsRender};
 const started = {};
 function show(tab){
   if(!starters[tab]) tab='cards';
@@ -1152,6 +1212,7 @@ renderChips();
 updateVoiceStatus();
 let startTab = 'cards'; try{ startTab = location.hash.slice(1); }catch(e){}
 show(startTab);
+window.addEventListener('hashchange',()=>{ try{ const t=location.hash.slice(1); if(t && t!==current) show(t); }catch(e){} });
 </script>
 </body>
 </html>
